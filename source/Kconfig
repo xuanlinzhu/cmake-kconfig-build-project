@@ -1,0 +1,7 @@
+# source of Kconfig
+
+menu "ck config"
+    config CK_CONFIG
+        string "ck config"
+        default "config1"
+endmenu
