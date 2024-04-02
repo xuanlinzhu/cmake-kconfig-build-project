@@ -9,25 +9,38 @@
 同时关键字产生对应的宏定义，用于对应的代码实现
 
 # 使用方式
-## windows下：
+
     
 ## Cmake配置使用分为两种：
 递归目录：` list_template()`
 模块目录：` module_template()`
 两个函数的参数都是依赖对应的宏，如果该宏存在，则该部分的cmake执行，可以不输入参数，一定会执行
 
-进入到`cd .\project\template1\`路径下
+
+## windows下：
+进入到`cd .\project\template1\`路径下 
+
 windows配置:`.\ck_script.bat cn`或者`.\ck_script.bat config`
+
 windows构建:`.\ck_script.bat b`或者`.\ck_script.bat build`
+
 windows编译:`.\ck_script.bat m`或者`.\ck_script.bat make`
+
 windows清除:`.\ck_script.bat cl`或者`.\ck_script.bat clean`
+
 windows自动配置、构建、编译:`.\ck_script.bat a`或者`.\ck_script.bat auto`
 
+## Linux下：
+进入到`cd .\project\template1\`路径下
 
 Linux配置:`.\ck_script.sh cn`或者`.\ck_script.sh config`
+
 Linux构建:`.\ck_script.sh b`或者`.\ck_script.sh build`
+
 Linux编译:`.\ck_script.sh m`或者`.\ck_script.sh make`
+
 Linux清除:`.\ck_script.sh cl`或者`.\ck_script.sh clean`
+
 Linux自动配置、构建、编译:`.\ck_script.sh a`或者`.\ck_script.sh auto`
 # CMake API 文档
 
@@ -40,6 +53,18 @@ Linux自动配置、构建、编译:`.\ck_script.sh a`或者`.\ck_script.sh auto
 ### `print_paths()`
 
 这个函数用于输出当前源路径和当前构建路径。
+
+### `list_template([temp_arg])`
+
+非模块的构建模板函数。参数为相关的Kconfig配置的宏定义依赖。
+
+例如`list_template(MOD1_ENABLE)`表示如果定义了`MOD1_ENABLE`该路径中的的所有源文件、汇编文件、头文件、静态库都会参与构建，同时会自动搜索下一级目录的CMakeLists.txt加入构建过程；没有定义则不会参与构建。
+
+### `module_template([temp_arg])`
+
+模块的构建模板函数。参数为相关的Kconfig配置的宏定义依赖。
+
+例如`module_template(MOD1_ENABLE)`表示如果定义了`MOD1_ENABLE`该路径下（会递归搜索）的所有源文件、汇编文件、头文件、静态库都会参与构建；没有定义则不会参与构建。
 
 ### `find_current_source_file([output_variable])`
 
@@ -97,10 +122,4 @@ Linux自动配置、构建、编译:`.\ck_script.sh a`或者`.\ck_script.sh auto
 
 查找当前目录下一级的所有构建文件，并添加到构建路径中。
 
-### `list_template([temp_arg])`
 
-非模块的构建模板函数。参数为相关的Kconfig配置的宏定义依赖。
-
-### `module_template([temp_arg])`
-
-模块的构建模板函数。参数为相关的Kconfig配置的宏定义依赖。
