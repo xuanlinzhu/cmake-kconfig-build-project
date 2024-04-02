@@ -4,4 +4,10 @@ menu "ck config"
     config CK_CONFIG
         string "ck config"
         default "config1"
+    config MOD1_ENABLE
+        bool "enable mod1"
+        default y
+    config MOD2_ENABLE
+        bool "enable mod2"
+        default y    
 endmenu

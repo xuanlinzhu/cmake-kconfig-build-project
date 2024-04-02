@@ -3,8 +3,6 @@
 # ck config
 #
 CONFIG_CK_CONFIG="config1"
-CONFIG_MOD1_ENABLE=y
-CONFIG_MOD2_ENABLE=y
 # end of ck config
 
 #
