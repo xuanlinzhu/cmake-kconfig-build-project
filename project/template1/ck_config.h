@@ -2,10 +2,9 @@
 #ifndef __CK_CONFIG_H__
 #define __CK_CONFIG_H__
 
-#define CK_CONFIG "config1"
+#define CK_CONFIG "test1"
 #define MOD1_ENABLE 1
-#define MOD2_ENABLE 1
-#define CK_WIN7 1
+#define CK_WIN11 1
 #define CK_STRING "string"
 #define CK_MENUCONFIG 1
 #define CK_MENUCONFIG1 32

@@ -3,14 +3,16 @@
 # ck config
 #
 CONFIG_CK_CONFIG="config1"
+CONFIG_MOD1_ENABLE=y
+CONFIG_MOD2_ENABLE=y
 # end of ck config
 
 #
 # User config
 #
-CONFIG_CK_WIN7=y
+# CONFIG_CK_WIN7 is not set
 # CONFIG_CK_WIN10 is not set
-# CONFIG_CK_WIN11 is not set
+CONFIG_CK_WIN11=y
 CONFIG_CK_STRING="string"
 CONFIG_CK_MENUCONFIG=y
 CONFIG_CK_MENUCONFIG1=32
