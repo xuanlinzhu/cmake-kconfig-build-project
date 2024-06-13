@@ -98,7 +98,7 @@ def make_func():
     try:
         os.chdir("build")  # 尝试将当前工作目录更改为"build"
         print("Running make...")
-        subprocess.run(["make"], check=True)  # 执行make命令，并检查其返回值
+        subprocess.run(["make"], check=True,shell=True)  # 执行make命令，并检查其返回值
         os.chdir("..")  # 将当前工作目录更改回上级目录
     except subprocess.CalledProcessError as e:  # 捕获make命令执行失败的异常
         print(f"Error executing make: {e}")
