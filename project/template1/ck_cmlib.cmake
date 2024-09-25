@@ -8,17 +8,13 @@
 include(ck_config.cmake)
 
 # 设置需要匹配的源文件类型
-set(ALL_SOURCES_TYPES "*.c" "*.cpp")
-# 设置需要匹配的汇编文件类型
-set(ASM_SOURCES_TYPES "*.S" "*.asm")
+set(ALL_SOURCES_TYPES "*.c" "*.cpp" "*.S" "*.s")
 # 设置需要匹配的头文件类型
 set(ALL_HEADER_TYPES "*.h")
 # 设置需要匹配的静态库类型
 set(ALL_LIBRARY_TYPES "*.a")
 # 全部源文件
 set_property( GLOBAL APPEND PROPERTY ALL_CODE_SOURCES)
-# 汇编文件
-set_property( GLOBAL APPEND PROPERTY ASM_CODE_SOURCES)
 # 全部引用路径
 set_property( GLOBAL APPEND PROPERTY ALL_CODE_INCLUDES)
 # 全部静态库
@@ -82,57 +78,37 @@ function(add_some_source_file )
     endif()
 endfunction()
 
-#------------------查找当前目录的汇编文件------------------#
-function(find_current_asm_file)
-    file(GLOB CURRENT_CODE_SOURCES ${ASM_SOURCES_TYPES})
-    # 如果当前路径下存在源文件，则将其添加到顶层目录的变量中
-    if(CURRENT_CODE_SOURCES)
-        message(STATUS "添加汇编文件:${CURRENT_CODE_SOURCES}")
-        # 将当前获取的文件传输至全局变量
-        set_property( GLOBAL APPEND PROPERTY ASM_CODE_SOURCES ${CURRENT_CODE_SOURCES}) 
-    endif()
-    # 将传递给函数的所有参数存储
-    set(TEMP_ARG ${ARGN})
-    if(TEMP_ARG)
-        set(${TEMP_ARG} ${CURRENT_CODE_SOURCES} PARENT_SCOPE)
-    endif()
-endfunction()
 
-#------------------查找当前目录下的汇编文件------------------#
-function(find_recurse_asm_file )
-    file(GLOB_RECURSE CURRENT_CODE_SOURCES ${ASM_SOURCES_TYPES})
-    # 如果当前路径下存在源文件，则将其添加到顶层目录的变量中
-    if(CURRENT_CODE_SOURCES)
-        message(STATUS "添加汇编文件:${CURRENT_CODE_SOURCES}")
-        # 将当前获取的文件传输至全局变量
-        set_property( GLOBAL APPEND PROPERTY ASM_CODE_SOURCES ${CURRENT_CODE_SOURCES}) 
+#------------------从全局变量中移除特定源文件------------------#
+function(remove_some_source_file )
+    # 获取全局变量中的所有文件
+    get_property(ALL_FILES GLOBAL PROPERTY ALL_CODE_SOURCES)
+    if(NOT ALL_FILES)
+        message(STATUS "没有文件可移除")
+        return()
     endif()
-    # 将传递给函数的所有参数存储
-    set(TEMP_ARG ${ARGN})
-    if(TEMP_ARG)
-        set(${TEMP_ARG} ${CURRENT_CODE_SOURCES} PARENT_SCOPE)
-    endif()
-endfunction()
 
-#------------------添加当前目录下的特定汇编文件------------------#
-function(add_some_asm_file )
-    set(ADD_FILES "")
     # 遍历所有输入参数
     foreach(F_NAME ${ARGN})
-        # 判断输入函数是否为空
+        # 判断输入文件名是否为空
         if(F_NAME)
-            # message(STATUS "添加特定源文件:${F_NAME}")
-            list(APPEND ADD_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME})
+            set(REMOVE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME}")
+            list(FIND ALL_FILES "${REMOVE_FILE}" INDEX)
+            if(NOT INDEX EQUAL -1)
+                list(REMOVE_AT ALL_FILES ${INDEX})
+                message(STATUS "移除特定源文件: ${REMOVE_FILE}")
+            else()
+                message(WARNING "文件 ${REMOVE_FILE} 不存在于 ALL_CODE_SOURCES 中")
+            endif()
         endif()
     endforeach()
-    
-    # 如果添加了源文件，则将其添加到顶层目录的变量中
-    if(ADD_FILES)
-        message(STATUS "添加汇编文件:${ADD_FILES}")
-        # 将当前获取的文件传输至全局变量
-        set_property( GLOBAL APPEND PROPERTY ASM_CODE_SOURCES ${ADD_FILES}) 
-    endif()
+
+    # 更新全局变量
+    set_property(GLOBAL PROPERTY ALL_CODE_SOURCES "${ALL_FILES}")
 endfunction()
+
+
+
 
 #------------------加入当前目录的引用路径------------------#
 function(find_current_header_dir )
@@ -231,7 +207,7 @@ function(find_recurse_library_file )
     endif()
 endfunction()
 
-#------------------添加当前目录下的特定静态库------------------#
+#------------------添加当前目录下的特定源文件------------------#
 function(add_some_library_file )
     set(ADD_FILES "")
     # 遍历所有输入参数
@@ -302,7 +278,6 @@ function(list_template )
     # 执行后续的代码
     print_paths()
     find_current_source_file()
-    find_current_asm_file()
     find_current_header_dir()
     find_current_library_file()
     find_cmakelists_current_dir()
@@ -323,7 +298,6 @@ function(module_template )
     endif()
     print_paths()
     find_recurse_source_file()
-    find_recurse_asm_file()
     find_recurse_header_dir()
     find_recurse_library_file()
 endfunction()
@@ -337,22 +311,6 @@ function(print_all_code_sources )
     get_property(SRC_LIST GLOBAL PROPERTY ALL_CODE_SOURCES )
     # 打印所有的源文件
     message(STATUS "所有的源文件:${SRC_LIST}")
-    if(ALL_SOURCES)
-        # 将 SRC_LIST 的值设置给 ALL_SOURCES
-        set(${ALL_SOURCES} ${SRC_LIST} PARENT_SCOPE)
-    endif()
-
-endfunction()
-
-#------------------打印工程包含的所有汇编文件------------------#
-function(print_all_asm_sources )
-    # 将传递给函数的所有参数存储
-    set(ALL_SOURCES ${ARGN})
-    set(SRC_LIST "")
-    # 将 ALL_CODE_SOURCES 的内容保存到 SRC_LIST 中
-    get_property(SRC_LIST GLOBAL PROPERTY ASM_CODE_SOURCES )
-    # 打印所有的源文件
-    message(STATUS "所有的汇编文件:${SRC_LIST}")
     if(ALL_SOURCES)
         # 将 SRC_LIST 的值设置给 ALL_SOURCES
         set(${ALL_SOURCES} ${SRC_LIST} PARENT_SCOPE)
