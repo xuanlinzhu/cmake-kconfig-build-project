@@ -76,11 +76,13 @@ Linux自动配置、构建、编译:`.\ck_script.sh a`或者`.\ck_script.sh auto
 
 ### `add_some_source_file(file1 [file2 ...])`
 
+向项目中添加特定的源文件。
+
+
+
+### `remove_some_source_file(file1 [file2 ...])`
 从全局变量中移除特定源文件
 
-### `remove_some_source_file([output_variable])`
-
-向项目中添加特定的源文件。
 
 ### `find_current_asm_file([output_variable])`
 
