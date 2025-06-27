@@ -1,0 +1,20 @@
+# sline top/Kconfig
+mainmenu "config"
+
+
+
+
+config PRO_ROOT
+    string 
+    default "$(ROOT)"
+
+menu "User config"
+
+
+	config PRO_NAME
+        string "Input project name"
+        default "lr_project" 
+endmenu
+
+
+
