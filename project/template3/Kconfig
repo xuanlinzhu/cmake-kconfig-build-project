@@ -1,12 +1,13 @@
 # sline top/Kconfig
 mainmenu "config"
 
-
-
-
-config PRO_ROOT
+config ROOT_PATH
+    string
+    default "../../"
+    
+config PRO_PATH
     string 
-    default "$(ROOT)"
+    default "./"
 
 menu "User config"
 

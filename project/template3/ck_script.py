@@ -8,18 +8,17 @@ import shutil
 import subprocess
 import sys
 
+py_path = "/usr/bin/python3"
 def config_func(param):
     print("Executing config operation...")
     try:
-        subprocess.run(["menuconfig"], check=True)
-    except FileNotFoundError:
-        subprocess.run(["menuconfig.py"], check=True)
+        subprocess.run([py_path, "../../tools/menuconfig.py", "Kconfig"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error executing menuconfig: {e}")
         sys.exit(1)
     try:
         print("Executing ck_pylib.py .")
-        subprocess.run(["python", "ck_pylib.py"], check=True)
+        subprocess.run([py_path, "ck_pylib.py"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"Error executing ck_pylib.py: {e}")
         sys.exit(1)

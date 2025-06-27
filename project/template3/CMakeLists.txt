@@ -4,46 +4,14 @@ include(ck_cmlib.cmake)
 SET(CMAKE_C_COMPILER_WORKS TRUE)
 SET(CMAKE_CXX_COMPILER_WORKS FAULT)
 
-if(MIPS_ARCH_64)
-	set(CROSS_COMPILE "mips-sde-elf" )
 
-	add_compile_options(-march=mips64r2 -mabi=64 -msoft-float -EL -mno-gpopt -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -std=gnu99 -g)
-	add_compile_options(-fno-builtin -fno-exceptions -ffunction-sections -Wno-error=deprecated-declarations -Wno-deprecated-declarations)
-	add_compile_options(-DHAVE_QUAD)
+set(CROSS_COMPILE "arm-xilinx-linux-gnueabi" )
 
-	add_link_options(-march=mips64r2 -mabi=64 -msoft-float -EL -mno-gpopt -Wno-int-to-pointer-cast -Wno-pointer-to-int-cast -std=gnu99 -g)
-	add_link_options(-fno-builtin -fno-exceptions -ffunction-sections -Wno-error=deprecated-declarations -Wno-deprecated-declarations)
-	add_link_options(-nostartfiles)
-	
-	add_link_options(-T${CMAKE_CURRENT_SOURCE_DIR}/link.lds)
-elseif(LOONG_ARCH_64)
-	set(CROSS_COMPILE "loongarch64-linux-gnu" )
-
-	add_compile_options(-G0 -Wall -nostdinc -fno-builtin -DHAVE_QUAD -ffreestanding -nodefaultlibs -nostartfiles)
-	add_link_options(-G0 -Wall -nostdinc -fno-builtin -DHAVE_QUAD -ffreestanding -nodefaultlibs -nostartfiles)
-	
-	add_link_options(-T${CMAKE_CURRENT_SOURCE_DIR}/link.lds)
-endif()
-
-add_link_options(-Wl,-Map=${CMAKE_CURRENT_SOURCE_DIR}/bin/${PRO_NAME}.map,-cref)
-
-if(OPTIMIZATION_LEVEL_0)
-add_compile_options(-O0)
-add_link_options(-O0)
-message(STATUS "optimization level 0")
-elseif(OPTIMIZATION_LEVEL_1)
-add_compile_options(-O1)
-add_link_options(-O1)
-message(STATUS "optimization level 1")
-elseif(OPTIMIZATION_LEVEL_2)
-add_compile_options(-O2)
-add_link_options(-O2)
-message(STATUS "optimization level 2")
-elseif(OPTIMIZATION_LEVEL_3)
-add_compile_options(-O3)
-add_link_options(-O3)
-message(STATUS "optimization level 3")
-endif()
+add_compile_options(-mthumb -mfpu=neon -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=/opt/petalinux/2020.2/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi)
+# add_link_options(-mthumb -mfpu=neon -mfloat-abi=hard -mcpu=cortex-a9 --sysroot=/opt/petalinux/2020.2/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi)
+# add_link_options(-T${CMAKE_CURRENT_SOURCE_DIR}/link.lds)
+# add_link_options(-Wl,-Map=${CMAKE_CURRENT_SOURCE_DIR}/bin/${PRO_NAME}.map,-cref)
+add_link_options("-Wl,--dynamic-linker=/lib/ld-linux-armhf.so.3")
 
 #告诉cmake是进行交叉编译
 SET(CMAKE_CROSSCOMPILING TRUE)
@@ -73,11 +41,8 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${OUTPUT_DIR})
 find_current_source_file()
 find_current_header_dir()
 
-
-
 # 配置外部工程路径
-#set_external_path("${CMAKE_CURRENT_SOURCE_DIR}/../../LIB64" "LIB64")
-set_external_path("${KF_ROOT}/loongreal" "loongreal")
+set_external_path("${ROOT_PATH}/source" "source")
 # 排除搜索路径
 find_cmakelists_current_dir("build" "bin")
 
@@ -90,15 +55,15 @@ INCLUDE_DIRECTORIES(${INCLUDE_PATH})
 
 add_executable(${PRO_NAME} ${SRC_FILES})
 
-#make bin命令即可生成bin文件
-ADD_CUSTOM_COMMAND(TARGET ${PRO_NAME} POST_BUILD COMMAND ${CROSS_COMPILE}-objcopy -O binary ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME} ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME}.bin)
+# #make bin命令即可生成bin文件
+# ADD_CUSTOM_COMMAND(TARGET ${PRO_NAME} POST_BUILD COMMAND ${CROSS_COMPILE}-objcopy -O binary ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME} ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME}.bin)
 
-#make bin命令即可生成反汇编文件
-ADD_CUSTOM_COMMAND(TARGET ${PRO_NAME} POST_BUILD COMMAND ${CROSS_COMPILE}-objdump -D ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME} > ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME}.dis)
+# #make bin命令即可生成反汇编文件
+# ADD_CUSTOM_COMMAND(TARGET ${PRO_NAME} POST_BUILD COMMAND ${CROSS_COMPILE}-objdump -D ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME} > ${PROJECT_SOURCE_DIR}/bin/${PRO_NAME}.dis)
 
-if(NOT ${LIB_FILES})
-	target_link_libraries(${PRO_NAME} ${LIB_FILES})
-endif()
+# if(NOT ${LIB_FILES})
+# 	target_link_libraries(${PRO_NAME} ${LIB_FILES})
+# endif()
 
 
 
