@@ -7,7 +7,7 @@
 # cmake最低版本要求
 cmake_minimum_required(VERSION 3.5)
 
-include(ck_cmlib.cmake)
+include(../../tools/ck_cmlib.cmake)
 
 set(PRO_NAME "ck_template" )
 project(${PRO_NAME})
@@ -41,7 +41,7 @@ set_external_path("${CMAKE_CURRENT_SOURCE_DIR}/../../source" "ex_source")
 find_cmakelists_current_dir("build")
 
 print_all_code_sources(SRC_FILES)
-print_all_asm_sources(ASM_FILES)
+# print_all_asm_sources(ASM_FILES)
 # 把对应的文件标记为汇编文件
 set_source_files_properties(${ASM_FILES} PROPERTIES LANGUAGE ASM)
 print_all_code_includes(INCLUDE_PATH)

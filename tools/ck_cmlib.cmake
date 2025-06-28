@@ -1,8 +1,8 @@
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
-# Date: 2024-3-26
-# Version: 1.0
-#
+# Date: 2025-6-28
+# Version: 1.1
+# 新增移除特定C文件
 # Description: 这个文件用于创建cmake的快速模板工程
 
 include(ck_config.cmake)
@@ -77,6 +77,38 @@ function(add_some_source_file )
         set_property( GLOBAL APPEND PROPERTY ALL_CODE_SOURCES ${ADD_FILES}) 
     endif()
 endfunction()
+
+
+#------------------从全局变量中移除特定源文件------------------#
+function(remove_some_source_file )
+    # 获取全局变量中的所有文件
+    get_property(ALL_FILES GLOBAL PROPERTY ALL_CODE_SOURCES)
+    if(NOT ALL_FILES)
+        message(STATUS "没有文件可移除")
+        return()
+    endif()
+
+    # 遍历所有输入参数
+    foreach(F_NAME ${ARGN})
+        # 判断输入文件名是否为空
+        if(F_NAME)
+            set(REMOVE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME}")
+            list(FIND ALL_FILES "${REMOVE_FILE}" INDEX)
+            if(NOT INDEX EQUAL -1)
+                list(REMOVE_AT ALL_FILES ${INDEX})
+                message(STATUS "移除特定源文件: ${REMOVE_FILE}")
+            else()
+                message(WARNING "文件 ${REMOVE_FILE} 不存在于 ALL_CODE_SOURCES 中")
+            endif()
+        endif()
+    endforeach()
+
+    # 更新全局变量
+    set_property(GLOBAL PROPERTY ALL_CODE_SOURCES "${ALL_FILES}")
+endfunction()
+
+
+
 
 #------------------加入当前目录的引用路径------------------#
 function(find_current_header_dir )

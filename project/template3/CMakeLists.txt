@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-include(ck_cmlib.cmake)
+include(../../tools/ck_cmlib.cmake)
 
 SET(CMAKE_C_COMPILER_WORKS TRUE)
 SET(CMAKE_CXX_COMPILER_WORKS FAULT)
