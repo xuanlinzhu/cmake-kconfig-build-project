@@ -42,26 +42,26 @@ class CKTool:
 
     def config(self, param=None):
         self.logger("Executing config operation...")
-        # choose one callup menuconfig
-        
-        menuconfig_cmd = [py_path, os.path.join(root_path, "tools/script/menuconfig.py"), "Kconfig"]
-        try:
-            subprocess.run(menuconfig_cmd, check=True)
-        except Exception as e:
-            self.logger(f"Error running menuconfig.py via run_subprocess: {e}")
-            # 如果失败，再尝试调用系统的menuconfig或menuconfig.py命令
-            try:
-                subprocess.run(["menuconfig"], check=True)
-            except FileNotFoundError:
-                try:
-                    subprocess.run(["menuconfig.py"], check=True)
-                except Exception as e2:
-                    self.logger(f"Error running menuconfig.py via subprocess: {e2}")
-                    sys.exit(1)
-            except subprocess.CalledProcessError as e3:
-                self.logger(f"menuconfig command failed: {e3}")
-                sys.exit(1)
 
+        menuconfig_fullpath = os.path.join(root_path, "tools/script/menuconfig.py")
+        fallback_cmds = [
+            [py_path, menuconfig_fullpath, "Kconfig"],
+            ["menuconfig"],
+            ["menuconfig.py"]
+        ]
+        success = False
+        for cmd in fallback_cmds:
+            try:
+                self.logger(f"Trying to run: {' '.join(cmd)}")
+                subprocess.run(cmd, check=True)
+                success = True
+                break
+            except Exception as e:
+                self.logger(f"Command failed: {' '.join(cmd)}, error: {e}")
+
+        if not success:
+            self.logger("All attempts to run menuconfig failed.")
+            sys.exit(1)
 
         self.logger("Executing ck_pylib.py ...")
         try:
@@ -71,24 +71,91 @@ class CKTool:
 
         if param in ["auto", "a"]:
             self.build(param)
+
 
     def guiconfig(self, param=None):
         self.logger("Executing config operation...")
 
-        # Windows 下要用双引号包裹参数，并在 Python 字符串中转义双引号
-        cmd_str = f'{py_path} {os.path.join(root_path, "tools/script/menuconfig.py")} Kconfig'
+        menuconfig_fullpath = os.path.join(root_path, "tools/script/menuconfig.py")
+        fallback_cmds = [
+            [py_path, menuconfig_fullpath, "Kconfig"],
+            ["menuconfig"],
+            ["menuconfig.py"]
+        ]
 
+        # try:
+        #     if os.name == 'nt':
+        #         for cmd in fallback_cmds:
+        #             try:
+        #                 powershell_command = f'& {{ {cmd}; exit }}'
+        #                 subprocess.run(['start', 'powershell', '-NoExit', '-Command', powershell_command],
+        #                             shell=True)
+        #                 break  # 成功执行则退出循环
+        #             except Exception as e:
+        #                 self.logger(f"Windows fallback command failed: {cmd}, error: {e}")
+        #         else:
+        #             self.logger("All Windows menuconfig attempts failed.")
+        #             sys.exit(1)
+        #     else:
+        #         term_prog = os.getenv("TERMINAL") or "x-terminal-emulator"
+        #         for cmd in fallback_cmds:
+        #             try:
+        #                 subprocess.run([term_prog, "-e", *cmd.split()], check=True)
+        #                 break  # 成功执行则退出循环
+        #             except Exception as e:
+        #                 self.logger(f"Linux fallback command failed: {cmd}, error: {e}")
+        #         else:
+        #             self.logger("All Linux menuconfig attempts failed.")
+        #             sys.exit(1)
+        # except subprocess.CalledProcessError as e:
+        #     self.logger(f"Error executing menuconfig: {e}")
+        #     sys.exit(1)
+
+        # self.logger("Executing ck_pylib.py ...")
+        # try:
+        #     subprocess.run([py_path, os.path.join(root_path, "tools/script/ck_pylib.py")], check=True)
+        # except subprocess.CalledProcessError as e:
+        #     self.logger(f"Error executing ck_pylib.py: {e}")
+
+        # if param in ["auto", "a"]:
+        #     self.build(param)
         try:
             if os.name == 'nt':
-                # Powershell 命令，注意这里要用双引号转义，并且整个命令用单引号包裹
-                powershell_command = f'& {{ {cmd_str}; exit }}'
-                subprocess.run(['start', 'powershell', '-NoExit', '-Command', powershell_command], shell=True)
+                for cmd in fallback_cmds:
+                    try:
+                        powershell_command = ' '.join(cmd)
+                        powershell_full_command = f'& {{ {powershell_command}; exit }}'
+                        self.logger(f"Trying Windows fallback command: {powershell_full_command}")
+
+                        # 用 cmd /c start /wait 打开新窗口并阻塞，等待关闭
+                        subprocess.run([
+                            'cmd', '/c', 'start', '/wait', 'powershell',
+                            '-NoExit', '-Command', powershell_full_command
+                        ], check=True)
+                        break
+                    except Exception as e:
+                        self.logger(f"Windows fallback command failed: {' '.join(cmd)}, error: {e}")
+                else:
+                    self.logger("All Windows menuconfig attempts failed.")
+                    sys.exit(1)
             else:
                 term_prog = os.getenv("TERMINAL") or "x-terminal-emulator"
-                subprocess.run([term_prog, "-e", py_path, os.path.join(root_path, "tools/script/menuconfig.py"), "Kconfig"], check=True)
+                for cmd in fallback_cmds:
+                    try:
+                        self.logger(f"Trying Linux fallback command: {term_prog} -e {' '.join(cmd)}")
+                        # 确保cmd是列表，这里不用split，用cmd本身是列表
+                        subprocess.run([term_prog, "-e", *cmd], check=True)
+                        break
+                    except Exception as e:
+                        self.logger(f"Linux fallback command failed: {' '.join(cmd)}, error: {e}")
+                else:
+                    self.logger("All Linux menuconfig attempts failed.")
+                    sys.exit(1)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing menuconfig: {e}")
+            sys.exit(1)
 
+        # 这里是menuconfig执行完毕后才会继续执行
         self.logger("Executing ck_pylib.py ...")
         try:
             subprocess.run([py_path, os.path.join(root_path, "tools/script/ck_pylib.py")], check=True)
@@ -97,6 +164,7 @@ class CKTool:
 
         if param in ["auto", "a"]:
             self.build(param)
+
 
     def build(self, param=None):
         self.logger("Executing build operation...")

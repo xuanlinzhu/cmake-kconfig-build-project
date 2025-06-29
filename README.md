@@ -15,12 +15,11 @@
 
 ## 🚀 使用方式
 
-### 🖥 Windows 平台
 
-进入路径：
+进入工程路径：
 
 ```powershell
-cd .\project\template1\
+cd .\project\template\
 ```
 
 | 操作   | 命令                              |
