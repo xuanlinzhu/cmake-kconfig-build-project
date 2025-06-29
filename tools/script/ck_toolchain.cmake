@@ -1,3 +1,8 @@
+# Author: zhuxuanlin
+# Email: xuanlinzhu@qq.com
+# Date: 2025-6-28
+# Version: 2.0.0
+
 message(STATUS "***************************** TOOLCHAIN START *****************************")
 # System
 if(DEFINED TC_SYSTEM_NAME_GENERIC )

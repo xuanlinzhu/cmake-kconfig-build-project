@@ -1,7 +1,7 @@
 # ck_tool.py
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
-# Version: 2.0
+# Version: 2.0.0
 # Description: Unified GUI and CLI tool for building with CMake and Kconfig, supporting Windows/Linux
 
 import os

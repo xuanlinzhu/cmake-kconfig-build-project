@@ -1,7 +1,7 @@
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
 # Date: 2025-6-28
-# Version: 1.1
+# Version: 2.0.0
 # 新增移除特定C文件
 # Description: 这个文件用于创建cmake的快速模板工程
 

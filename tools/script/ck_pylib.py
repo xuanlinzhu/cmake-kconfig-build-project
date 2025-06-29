@@ -7,7 +7,7 @@
 import os
 
 # 脚本版本 
-ck_pylib_version = "1.1.1"
+ck_pylib_version = "2.0.0"
 def parse_config_file_cmake(config_file):
     config_vars = {}
     with open(config_file, 'r') as f:

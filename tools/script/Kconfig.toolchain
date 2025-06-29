@@ -1,7 +1,9 @@
+# Author: zhuxuanlin
+# Email: xuanlinzhu@qq.com
+# Date: 2025-6-28
+# Version: 2.0.0
+
 menu "toolchain config"
-
-
-
 
 # 设置目标系统类型
 choice

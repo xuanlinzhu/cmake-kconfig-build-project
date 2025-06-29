@@ -13,32 +13,75 @@
 
 ---
 
-## 🚀 使用方式
+# CK-TOOL 使用说明文档
+
+---
+
+## 概述
+
+`ck_tool.py` 是一个基于 Python 开发的跨平台构建辅助工具，集成了对 CMake 和 Kconfig 的统一管理和调用。  
+支持命令行（CLI）和图形界面（GUI）两种模式，适用于 Windows 和 Linux 系统。
+
+本工具主要实现：
+
+- 自动化执行项目配置（基于 Kconfig）
+- 构建系统生成（基于 CMake）
+- 项目编译（调用 Make）
+- 构建产物清理
+- 支持图形化界面实时查看日志和执行操作
+
+---
+## 命令行模式（CLI）入口
 
 
-进入工程路径：
+---
 
-```powershell
-cd .\project\template\
+## 典型使用流程
+
+### CLI 方式
+在windows下执行如果使用python不行，就使用python.exe\
+linux可以使用python3 \
+目的都是调用ck_tool.py这个脚本
+
+```bash
+# 进入GUI
+python ck_tool.py 
+
+# 配置项目
+python ck_tool.py config
+
+# 生成构建系统
+python ck_tool.py build
+
+# 编译项目
+python ck_tool.py make
+
+# 清理构建产物
+python ck_tool.py clean
+
+# 一键自动配置、构建和编译
+python ck_tool.py auto
 ```
 
-| 操作   | 命令                              |
-| ---- | ------------------------------- |
-| 配置   | `.\ck_script.bat cn` 或 `config` |
-| 构建   | `.\ck_script.bat b` 或 `build`   |
-| 编译   | `.\ck_script.bat m` 或 `make`    |
-| 清理   | `.\ck_script.bat cl` 或 `clean`  |
-| 一键构建 | `.\ck_script.bat a` 或 `auto`    |
+- 通过命令行参数执行对应功能  
+- 支持命令及简写如下：
+
+| 命令      | 作用           | 简写  |
+| --------- | -------------- | ----- |
+| config    | 运行配置       | c     |
+| build     | 生成构建系统   | b     |
+| make      | 编译项目       | m     |
+| clean     | 清理构建产物   | cl    |
+| auto      | 配置 + 构建 + 编译 | a  |
+| help      | 显示帮助信息   | h     |
+
+- 错误命令会打印错误信息并退出
 
 
 ## 📚 CMake API 文档
-作者： zhuxuanlin \
-版本： v1.1 \
-更新时间： 2025-06-28 \
-描述： 本文档介绍项目中封装的 CMake 宏与函数，用于模块化组织源文件、头文件、库文件等构建资源。
 
-📂 路径与文件查找函数
-🔍 源文件
+📂 路径与文件查找函数\
+🔍 源文件\
 find_current_source_file([var_name])
 查找当前目录下 .c/.cpp/.S/.s 文件，加入 ALL_CODE_SOURCES。
 
@@ -51,7 +94,7 @@ add_some_source_file(file1.c file2.c ...)
 remove_some_source_file(file1.c file2.c ...)
 从源文件列表中移除指定文件。
 
-📁 头文件路径
+📁 头文件路径 \
 find_current_header_dir([var_name])
 检查当前目录是否包含 .h，添加至 ALL_CODE_INCLUDES。
 
@@ -61,7 +104,7 @@ find_recurse_header_dir([var_name])
 add_some_header_dir(dir1 dir2 ...)
 手动添加包含路径。
 
-📚 静态库
+📚 静态库\
 find_current_library_file([var_name])
 查找当前目录下 .a 文件。
 
@@ -71,45 +114,20 @@ find_recurse_library_file([var_name])
 add_some_library_file(file1.a file2.a ...)
 手动添加库文件。
 
-🔧 模块化构建函数
+🔧 模块化构建函数\
 set_external_path(PATH BINARY_NAME)
 添加外部源码路径作为子项目。
 
 find_cmakelists_current_dir([exclude1 exclude2 ...])
 查找一级子目录中包含 CMakeLists.txt 的路径（可排除）。
 
-🧱 构建模板函数
+🧱 构建模板函数\
 list_template([flag])
-适用于单体项目结构。自动调用以下函数：
-
-print_paths
-
-find_current_source_file
-
-find_current_header_dir
-
-find_current_library_file
-
-find_cmakelists_current_dir
-
-示例：
-
-cmake
-复制
-编辑
-list_template(PROJECT_ENABLE)
+适用于单体项目结构。
 module_template([flag])
 适用于模块化项目结构。自动调用以下函数：
 
-print_paths
-
-find_recurse_source_file
-
-find_recurse_header_dir
-
-find_recurse_library_file
-
-📤 信息打印函数
+📤 信息打印函数\
 print_all_code_sources([var_name])
 打印并返回所有源文件。
 
@@ -118,9 +136,3 @@ print_all_code_includes([var_name])
 
 print_all_code_librarys([var_name])
 打印并返回所有静态库路径。
-
-📝 全局变量说明
-变量名	描述
-ALL_CODE_SOURCES	所有收集到的源文件（.c/.cpp/.S）
-ALL_CODE_INCLUDES	所有头文件包含路径
-ALL_CODE_LIBRARIES	所有 .a 静态库文件路径

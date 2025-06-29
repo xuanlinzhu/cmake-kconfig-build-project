@@ -1,3 +1,7 @@
+# Author: zhuxuanlin
+# Email: xuanlinzhu@qq.com
+# Date: 2025-6-28
+# Version: 2.0.0
 ############################标准设置，不修改###################################
 # 设置cmake最小要求版本
 cmake_minimum_required(VERSION 3.5)
