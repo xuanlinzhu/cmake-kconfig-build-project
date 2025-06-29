@@ -1,0 +1,11 @@
+menuconfig PACK_PACK1
+    bool "pack1"
+    default y
+
+if(PACK_PACK1)
+
+    config PACK_PACK1_STR
+        string "pack1 string"
+        default "it's pack1"
+
+endif

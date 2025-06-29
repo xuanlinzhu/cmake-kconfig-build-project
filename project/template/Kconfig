@@ -1,0 +1,45 @@
+#####################################################
+#                   标准配置，不要修改
+#####################################################
+mainmenu "CK TOOL CONFIG"
+#配置顶层路径，这里可以修改为工程实际路径
+root_path := ../..
+#配置工程路径
+pro_path = .
+
+#导出变量给Cmake使用
+config ROOT_PATH
+    string
+    default "$(root_path)"
+    
+config PRO_PATH
+    string 
+    default "$(pro_path)"
+
+# 引入工具链管理
+source "$(root_path)/tools/script/Kconfig.toolchain"
+
+#判断是否使用实例
+if(CK_EXAMPLE_DIS)
+    source "$(root_path)/tools/script/Kconfig.example"
+endif
+
+#####################################################
+#                   用户配置，按需修改
+#####################################################
+menu "project config"
+    # 决定生成文件的名字
+	config PRO_NAME
+        string "project name"
+        default "ck_project" 
+
+    # 正式工程删除此选项
+    config CK_EXAMPLE_DIS
+        bool "display Kconfig example"
+        default n
+
+endmenu
+
+#引入的外部模块配置
+source "$(root_path)/package/Kconfig"
+source "$(root_path)/driver/Kconfig"

@@ -1,0 +1,160 @@
+menu "toolchain config"
+
+
+
+
+# 设置目标系统类型
+choice
+    prompt "Target System Type"
+    default TC_SYSTEM_NAME_GENERIC
+
+config TC_SYSTEM_NAME_GENERIC
+    bool "Generic"
+    help
+      Generic system, no specific OS.
+
+config TC_SYSTEM_NAME_WINDOWS
+    bool "Windows"
+    help
+      Microsoft Windows OS.
+
+config TC_SYSTEM_NAME_LINUX
+    bool "Linux"
+    help
+      Target system is Linux.
+
+config TC_SYSTEM_NAME_DARWIN
+    bool "Darwin (macOS)"
+    help
+      Apple macOS system.
+
+endchoice
+
+
+# 设置目标架构
+choice
+    prompt "Target CPU Architecture"
+    default TC_CPU_X86_64
+
+config TC_CPU_X86_64
+    bool "x86_64"
+    help
+      64-bit Intel/AMD architecture.
+
+config TC_CPU_ARM
+    bool "arm"
+    help
+      ARM 32-bit architecture.
+
+config TC_CPU_AARCH64
+    bool "aarch64"
+    help
+      ARM 64-bit architecture.
+
+config TC_CPU_MIPS
+    bool "mips"
+    help
+      MIPS architecture.
+
+config TC_CPU_RISCV64
+    bool "riscv64"
+    help
+      RISC-V 64-bit architecture.
+
+endchoice
+
+# 编译类型
+choice
+    prompt "Build Type"
+    default TC_BUILD_TYPE_DEBUG
+
+config TC_BUILD_TYPE_DEBUG
+    bool "Debug"
+    help
+      Debug build with debug symbols and no optimization.
+
+config TC_BUILD_TYPE_RELEASE
+    bool "Release"
+    help
+      Release build with optimizations enabled.
+
+config TC_BUILD_TYPE_RELWITHDEBINFO
+    bool "RelWithDebInfo"
+    help
+      Release build with debug info included.
+
+config TC_BUILD_TYPE_MINSIZEREL
+    bool "MinSizeRel"
+    help
+      Release build optimized for minimum size.
+
+endchoice
+
+# 是否交叉编译
+config TC_CROSSCOMPILING
+    bool "Enable Cross Compiling"
+    default n
+    help
+      Enable this option if you are performing cross-compilation.
+      When enabled, CMake will treat the build as cross-compiling.
+
+config TC_C_STANDARD
+    string "C Language Standard"
+    default "c11"
+    help
+      Specify the C language standard version, e.g., 99, 11, 17.
+
+config TC_CXX_STANDARD
+    string "C++ Language Standard"
+    default "c++11"
+    help
+      Specify the C++ language standard version, e.g., 11, 14, 17.
+
+# 设置编译器路径
+config TC_C_CXX_COMPILER
+    string "C/C++ Compiler"
+    default ""
+    help
+      Specify the full path or command name of the C/C++ compiler to use for cross-compilation.
+
+
+# 设置编译参数
+config TC_COMPILE_OPTIONS
+    string "compile options"
+    default ""
+    help
+      Additional flags to pass to the compiler.
+
+# 设置链接参数
+config TC_LINK_OPTIONS
+    string "link options"
+    default ""
+    help
+      Additional flags to pass to the linker.
+
+# 设置lds文件
+config TC_LINK_FILE
+    string "link file(lds)"
+    default ""
+    help
+      Additional link file(current path) to the project.
+
+config TC_GENERATE_BIN
+    bool "Generate Binary File"
+    default n
+    help
+      Enable generation of binary (.bin) file from the executable.
+
+config TC_GENERATE_DISASSEMBLY
+    bool "Generate Disassembly File"
+    default n
+    help
+      Enable generation of disassembly (.dis) file for the executable.
+
+config TC_GENERATE_MAP_FILE
+    bool "Generate Map File"
+    default n
+    help
+      Enable generation of a map file during linking for debugging and analysis.
+
+endmenu

@@ -1,0 +1,5 @@
+menu "driver config"
+
+source "$(root_path)/driver/drv_temp/Kconfig"
+
+endmenu

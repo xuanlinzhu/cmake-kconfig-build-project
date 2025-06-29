@@ -1,0 +1,92 @@
+# 顶层菜单配置文件示例
+menu "example config"
+
+# 1. 布尔类型（bool）
+config FEATURE_A
+    bool "Enable Feature A"
+    default y
+    help
+        This enables Feature A, which is a basic example of a bool.
+
+# 2. 三态（tristate）：可选 y/m/n
+config MODULE_X
+    tristate "Enable module X"
+    default m
+    help
+        Tri-state option: yes, module, or no.
+
+# 3. 整数类型（int）
+config FEATURE_INT
+    int "Feature integer value"
+    default 10
+    range 0 100
+    help
+        Set an integer between 0 and 100.
+
+# 4. 字符串类型（string）
+config FEATURE_STR
+    string "Custom string value"
+    default "default_value"
+    help
+        Set your custom string value here.
+
+# 5. 依赖关系（depends on）
+config FEATURE_B
+    bool "Feature B"
+    depends on FEATURE_A
+    default y
+    help
+        Enabled only if FEATURE_A is enabled.
+
+# 6. 选择（select）
+config FEATURE_C
+    bool "Feature C (selects FEATURE_A)"
+    select FEATURE_A
+    help
+        When enabled, it automatically enables FEATURE_A.
+
+# 7. 条件表达式（if ... endif）
+if FEATURE_A
+config FEATURE_A_EXTRA
+    bool "Extra option under A"
+    default y
+endif
+
+# 8. choice 块（互斥选项）
+choice
+    prompt "Choose a backend"
+    default BACKEND_SPI
+
+config BACKEND_SPI
+    bool "SPI Backend"
+
+config BACKEND_I2C
+    bool "I2C Backend"
+
+config BACKEND_UART
+    bool "UART Backend"
+
+endchoice
+
+# 9. menuconfig（带子菜单）
+menuconfig ADVANCED_FEATURE
+    bool "Enable advanced features"
+    default n
+
+if ADVANCED_FEATURE
+config ADV_SUBOPT1
+    bool "Advanced Sub Feature 1"
+    default y
+
+config ADV_SUBOPT2
+    bool "Advanced Sub Feature 2"
+    default n
+endif
+
+# 10. 可见性控制（visible if）
+config HIDDEN_OPTION
+    bool "Hidden unless Feature A is on"
+    depends on FEATURE_A
+    default y
+
+endmenu

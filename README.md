@@ -1,131 +1,127 @@
 # cmake-kconfig-build-project
 
-#### 介绍
-创建了一个Kconfig配置参数，cmake构建工程且互相配合的中大型项目通用模板。
+## 📌 项目介绍
 
-#### 软件架构
-提供了用于cmake和Kconfig协同配置的工程模板
-利用kconfig生成的配置关键字，用于控制camke的编译过程
-同时关键字产生对应的宏定义，用于对应的代码实现
+本项目为中大型工程提供了一个通用的构建模板，实现 **CMake 与 Kconfig 的协同工作机制**。通过 Kconfig 配置生成关键参数宏，驱动 CMake 构建流程，同时生成的宏也可被代码直接使用，实现配置-构建-代码的联动闭环。
 
-# 使用方式
+## 🏗️ 软件架构
 
-    
-## Cmake配置使用分为两种：
-递归目录：` list_template()`
-模块目录：` module_template()`
-两个函数的参数都是依赖对应的宏，如果该宏存在，则该部分的cmake执行，可以不输入参数，一定会执行
+- 基于 CMake 的模块化构建体系。
+- 基于 Kconfig 的参数配置界面，支持交互式选择功能模块。
+- 自动生成宏定义，用于控制源码编译与功能开关。
+- 支持模块化 (`module_template`) 与递归式 (`list_template`) 两种组织方式。
 
+---
 
-## windows下：
-进入到`cd .\project\template1\`路径下 
+## 🚀 使用方式
 
-windows配置:`.\ck_script.bat cn`或者`.\ck_script.bat config`
+### 🖥 Windows 平台
 
-windows构建:`.\ck_script.bat b`或者`.\ck_script.bat build`
+进入路径：
 
-windows编译:`.\ck_script.bat m`或者`.\ck_script.bat make`
+```powershell
+cd .\project\template1\
+```
 
-windows清除:`.\ck_script.bat cl`或者`.\ck_script.bat clean`
-
-windows自动配置、构建、编译:`.\ck_script.bat a`或者`.\ck_script.bat auto`
-
-## Linux下：
-进入到`cd .\project\template1\`路径下
-
-Linux配置:`.\ck_script.sh cn`或者`.\ck_script.sh config`
-
-Linux构建:`.\ck_script.sh b`或者`.\ck_script.sh build`
-
-Linux编译:`.\ck_script.sh m`或者`.\ck_script.sh make`
-
-Linux清除:`.\ck_script.sh cl`或者`.\ck_script.sh clean`
-
-Linux自动配置、构建、编译:`.\ck_script.sh a`或者`.\ck_script.sh auto`
-# CMake API 文档
-
-## 概述
-
-这个文档提供了关于 CMake 文件中定义的函数和宏的 API 信息。
-
-## 函数
-
-### `print_paths()`
-
-这个函数用于输出当前源路径和当前构建路径。
-
-### `list_template([temp_arg])`
-
-非模块的构建模板函数。参数为相关的Kconfig配置的宏定义依赖。
-
-例如`list_template(MOD1_ENABLE)`表示如果定义了`MOD1_ENABLE`该路径中的的所有源文件、汇编文件、头文件、静态库都会参与构建，同时会自动搜索下一级目录的CMakeLists.txt加入构建过程；没有定义则不会参与构建。
-
-### `module_template([temp_arg])`
-
-模块的构建模板函数。参数为相关的Kconfig配置的宏定义依赖。
-
-例如`module_template(MOD1_ENABLE)`表示如果定义了`MOD1_ENABLE`该路径下（会递归搜索）的所有源文件、汇编文件、头文件、静态库都会参与构建；没有定义则不会参与构建。
-
-### `find_current_source_file([output_variable])`
-
-在当前目录查找源文件，并将结果输出在 `output_variable` 变量中。
-
-### `find_recurse_source_file([output_variable])`
-
-在当前目录及其子目录递归查找源文件，并将结果输出在 `output_variable` 变量中。
-
-### `add_some_source_file(file1 [file2 ...])`
-
-向项目中添加特定的源文件。
+| 操作   | 命令                              |
+| ---- | ------------------------------- |
+| 配置   | `.\ck_script.bat cn` 或 `config` |
+| 构建   | `.\ck_script.bat b` 或 `build`   |
+| 编译   | `.\ck_script.bat m` 或 `make`    |
+| 清理   | `.\ck_script.bat cl` 或 `clean`  |
+| 一键构建 | `.\ck_script.bat a` 或 `auto`    |
 
 
+## 📚 CMake API 文档
+作者： zhuxuanlin \
+版本： v1.1 \
+更新时间： 2025-06-28 \
+描述： 本文档介绍项目中封装的 CMake 宏与函数，用于模块化组织源文件、头文件、库文件等构建资源。
 
-### `remove_some_source_file(file1 [file2 ...])`
-从全局变量中移除特定源文件
+📂 路径与文件查找函数
+🔍 源文件
+find_current_source_file([var_name])
+查找当前目录下 .c/.cpp/.S/.s 文件，加入 ALL_CODE_SOURCES。
 
+find_recurse_source_file([var_name])
+递归查找子目录下源文件。
 
-### `find_current_asm_file([output_variable])`
+add_some_source_file(file1.c file2.c ...)
+手动添加源文件，相对当前目录。
 
-在当前目录查找汇编文件，并将结果输出在 `output_variable` 变量中。
+remove_some_source_file(file1.c file2.c ...)
+从源文件列表中移除指定文件。
 
-### `find_recurse_asm_file([output_variable])`
+📁 头文件路径
+find_current_header_dir([var_name])
+检查当前目录是否包含 .h，添加至 ALL_CODE_INCLUDES。
 
-在当前目录及其子目录递归查找汇编文件，并将结果输出在 `output_variable` 变量中。
+find_recurse_header_dir([var_name])
+递归查找所有头文件所在路径。
 
-### `add_some_asm_file(file1 [file2 ...])`
+add_some_header_dir(dir1 dir2 ...)
+手动添加包含路径。
 
-向项目中添加特定的汇编文件。
+📚 静态库
+find_current_library_file([var_name])
+查找当前目录下 .a 文件。
 
-### `find_current_header_dir([output_variable])`
+find_recurse_library_file([var_name])
+递归查找所有静态库文件。
 
-在当前目录查找头文件，并将结果输出在 `output_variable` 变量中。
+add_some_library_file(file1.a file2.a ...)
+手动添加库文件。
 
-### `find_recurse_header_dir([output_variable])`
+🔧 模块化构建函数
+set_external_path(PATH BINARY_NAME)
+添加外部源码路径作为子项目。
 
-在当前目录及其子目录递归查找头文件，并将结果输出在 `output_variable` 变量中。
+find_cmakelists_current_dir([exclude1 exclude2 ...])
+查找一级子目录中包含 CMakeLists.txt 的路径（可排除）。
 
-### `add_some_header_dir(dir1 [dir2 ...])`
+🧱 构建模板函数
+list_template([flag])
+适用于单体项目结构。自动调用以下函数：
 
-向项目中添加特定的头文件路径。
+print_paths
 
-### `find_current_library_file([output_variable])`
+find_current_source_file
 
-在当前目录查找静态库，并将结果输出在 `output_variable` 变量中。
+find_current_header_dir
 
-### `find_recurse_library_file([output_variable])`
+find_current_library_file
 
-在当前目录及其子目录递归查找静态库，并将结果输出在 `output_variable` 变量中。
+find_cmakelists_current_dir
 
-### `add_some_library_file(file1 [file2 ...])`
+示例：
 
-向项目中添加特定的静态库文件。
+cmake
+复制
+编辑
+list_template(PROJECT_ENABLE)
+module_template([flag])
+适用于模块化项目结构。自动调用以下函数：
 
-### `set_external_path(PATH BINARY_NAME)`
+print_paths
 
-添加外部路径，并指定与之对应的二进制目录。
+find_recurse_source_file
 
-### `find_cmakelists_current_dir([exclude_folders])`
+find_recurse_header_dir
 
-查找当前目录下一级的所有构建文件，并添加到构建路径中。
+find_recurse_library_file
 
+📤 信息打印函数
+print_all_code_sources([var_name])
+打印并返回所有源文件。
 
+print_all_code_includes([var_name])
+打印并返回所有头文件路径。
+
+print_all_code_librarys([var_name])
+打印并返回所有静态库路径。
+
+📝 全局变量说明
+变量名	描述
+ALL_CODE_SOURCES	所有收集到的源文件（.c/.cpp/.S）
+ALL_CODE_INCLUDES	所有头文件包含路径
+ALL_CODE_LIBRARIES	所有 .a 静态库文件路径

@@ -1,0 +1,11 @@
+menuconfig DRV_DRV1
+    bool "drv1"
+    default y
+
+if(DRV_DRV1)
+
+    config DRV_DRV1_NUM
+        int "drv1 number"
+        default 0
+
+endif
