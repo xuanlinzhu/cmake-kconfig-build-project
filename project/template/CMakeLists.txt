@@ -66,7 +66,7 @@ if(DEFINED TC_GENERATE_DISASSEMBLY)
         )
     else()
         add_custom_command(TARGET ${PRO_NAME} POST_BUILD
-            COMMAND /bin/sh -c "${TC_C_CXX_COMPILER}-objdump -D $<TARGET_FILE:${PRO_NAME}> > ${OUTPUT_DIR}/${PRO_NAME}.dis"
+            COMMAND /bin/sh -c '${TC_C_CXX_COMPILER}-objdump -D $<TARGET_FILE:${PRO_NAME}> > ${OUTPUT_DIR}/${PRO_NAME}.dis'
             COMMENT "Generating disassembly file [linux]: ${PRO_NAME}.dis"
         )
     endif()
