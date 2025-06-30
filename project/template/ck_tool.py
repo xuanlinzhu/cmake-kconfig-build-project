@@ -82,43 +82,6 @@ class CKTool:
             ["menuconfig"],
             ["menuconfig.py"]
         ]
-
-        # try:
-        #     if os.name == 'nt':
-        #         for cmd in fallback_cmds:
-        #             try:
-        #                 powershell_command = f'& {{ {cmd}; exit }}'
-        #                 subprocess.run(['start', 'powershell', '-NoExit', '-Command', powershell_command],
-        #                             shell=True)
-        #                 break  # 成功执行则退出循环
-        #             except Exception as e:
-        #                 self.logger(f"Windows fallback command failed: {cmd}, error: {e}")
-        #         else:
-        #             self.logger("All Windows menuconfig attempts failed.")
-        #             sys.exit(1)
-        #     else:
-        #         term_prog = os.getenv("TERMINAL") or "x-terminal-emulator"
-        #         for cmd in fallback_cmds:
-        #             try:
-        #                 subprocess.run([term_prog, "-e", *cmd.split()], check=True)
-        #                 break  # 成功执行则退出循环
-        #             except Exception as e:
-        #                 self.logger(f"Linux fallback command failed: {cmd}, error: {e}")
-        #         else:
-        #             self.logger("All Linux menuconfig attempts failed.")
-        #             sys.exit(1)
-        # except subprocess.CalledProcessError as e:
-        #     self.logger(f"Error executing menuconfig: {e}")
-        #     sys.exit(1)
-
-        # self.logger("Executing ck_pylib.py ...")
-        # try:
-        #     subprocess.run([py_path, os.path.join(root_path, "tools/script/ck_pylib.py")], check=True)
-        # except subprocess.CalledProcessError as e:
-        #     self.logger(f"Error executing ck_pylib.py: {e}")
-
-        # if param in ["auto", "a"]:
-        #     self.build(param)
         try:
             if os.name == 'nt':
                 for cmd in fallback_cmds:
