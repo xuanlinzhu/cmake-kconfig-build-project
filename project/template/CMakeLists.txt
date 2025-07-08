@@ -55,25 +55,25 @@ INCLUDE_DIRECTORIES(${INCLUDE_PATH})
 add_executable(${PRO_NAME} ${SRC_FILES})
 
 # 添加预定义宏
-# if(DEFINED TC_DEFINE_MACROS AND NOT TC_DEFINE_MACROS STREQUAL "")
-#     message(STATUS "Added macro definitions: ${TC_DEFINE_MACROS}")
-#     # 将空格分隔的宏列表转换成 CMake 列表
-#     string(REPLACE " " ";" TC_DEFINE_MACROS_LIST "${TC_DEFINE_MACROS}")
+if(DEFINED TC_DEFINE_MACROS AND NOT TC_DEFINE_MACROS STREQUAL "")
+    # 将空格分隔的宏列表转换成 CMake 列表
+    string(REPLACE " " ";" TC_DEFINE_MACROS_LIST "${TC_DEFINE_MACROS}")
 
-#     target_compile_definitions(${PRO_NAME} ${TC_DEFINE_MACROS_LIST})
+    target_compile_definitions(${PRO_NAME} PUBLIC ${TC_DEFINE_MACROS_LIST})
 
-#     message(STATUS "Added macro definitions: ${TC_DEFINE_MACROS}")
-# endif()
+    message(STATUS "Added macro definitions: ${TC_DEFINE_MACROS}")
+endif()
 
-# 添加链接库if(DEFINED TC_LINK_LIBRARIES AND NOT TC_LINK_LIBRARIES STREQUAL "")
-#     # 把空格分隔的字符串转换成CMake列表
-#     string(REPLACE " " ";" TC_LINK_LIBRARIES_LIST "${TC_LINK_LIBRARIES}")
+# 添加链接库
+if(DEFINED TC_LINK_LIBRARIES AND NOT TC_LINK_LIBRARIES STREQUAL "")
+    # 把空格分隔的字符串转换成CMake列表
+    string(REPLACE " " ";" TC_LINK_LIBRARIES_LIST "${TC_LINK_LIBRARIES}")
 
-#     # 这里举例添加为编译选项（你也可以换成链接选项或其他）
-#     target_link_libraries(${PRO_NAME} ${TC_LINK_LIBRARIES_LIST})
+    # 这里举例添加为编译选项（你也可以换成链接选项或其他）
+    target_link_libraries(${PRO_NAME} PRIVATE ${TC_LINK_LIBRARIES_LIST})
 
-#     message(STATUS "Added target compile options: ${TC_LINK_LIBRARIES}")
-# endif()
+    message(STATUS "Added target compile options: ${TC_LINK_LIBRARIES}")
+endif()
 
 # 
 # bin 文件生成
