@@ -119,6 +119,12 @@ config TC_C_CXX_COMPILER
     help
       Specify the full path or command name of the C/C++ compiler to use for cross-compilation.
 
+# 添加宏定义
+config TC_DEFINE_MACROS
+    string "Predefined Macros"
+    default ""
+    help
+      Additional macro definitions to pass to the compiler.
 
 # 设置编译参数
 config TC_COMPILE_OPTIONS
@@ -133,6 +139,13 @@ config TC_LINK_OPTIONS
     default ""
     help
       Additional flags to pass to the linker.
+
+# 设置target 链接
+config TC_LINK_LIBRARIES
+    string "link libraries"
+    default ""
+    help
+      Additional flags to pass to the target.
 
 # 设置lds文件
 config TC_LINK_FILE
