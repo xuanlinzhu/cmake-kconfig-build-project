@@ -13,7 +13,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 # ck_tools path
-root_path = "../../"
+ck_tools_path = "../../"
 
 # Python path
 py_path = sys.executable  
@@ -43,7 +43,7 @@ class CKTool:
     def config(self, param=None):
         self.logger("Executing config operation...")
 
-        menuconfig_fullpath = os.path.join(root_path, "ck_tools/script/menuconfig.py")
+        menuconfig_fullpath = os.path.join(ck_tools_path, "ck_tools/script/menuconfig.py")
         fallback_cmds = [
             [py_path, menuconfig_fullpath, "Kconfig"],
             ["menuconfig"],
@@ -65,7 +65,7 @@ class CKTool:
 
         self.logger("Executing ck_pylib.py ...")
         try:
-            subprocess.run([py_path, os.path.join(root_path, "ck_tools/script/ck_pylib.py")], check=True)
+            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/script/ck_pylib.py")], check=True)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing ck_pylib.py: {e}")
 
@@ -76,7 +76,7 @@ class CKTool:
     def guiconfig(self, param=None):
         self.logger("Executing config operation...")
 
-        menuconfig_fullpath = os.path.join(root_path, "tools/script/menuconfig.py")
+        menuconfig_fullpath = os.path.join(ck_tools_path, "tools/script/menuconfig.py")
         fallback_cmds = [
             [py_path, menuconfig_fullpath, "Kconfig"],
             ["menuconfig"],
@@ -121,7 +121,7 @@ class CKTool:
         # 这里是menuconfig执行完毕后才会继续执行
         self.logger("Executing ck_pylib.py ...")
         try:
-            subprocess.run([py_path, os.path.join(root_path, "ck_tools/script/ck_pylib.py")], check=True)
+            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/script/ck_pylib.py")], check=True)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing ck_pylib.py: {e}")
 
@@ -151,7 +151,7 @@ class CKTool:
         # refresh ck_version.h
         self.logger("Executing ck_version.py ...")
         try:
-            subprocess.run([py_path, os.path.join(root_path, "ck_tools/script/ck_version.py")], check=True)
+            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/script/ck_version.py")], check=True)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing ck_version.py: {e}")
 

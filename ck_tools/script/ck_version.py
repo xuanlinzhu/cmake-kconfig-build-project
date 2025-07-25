@@ -74,5 +74,5 @@ def update_ck_version_h(file_path):
     print(f"Updated {file_path} with new version {new_version}, build time {current_time}, and commit hash {current_commit_hash}")
 
 if __name__ == "__main__":
-    ck_version_h_path = 'ck_version.h'
+    ck_version_h_path = 'ck_config.h'
     update_ck_version_h(ck_version_h_path)
