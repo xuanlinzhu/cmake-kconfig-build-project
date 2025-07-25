@@ -1,5 +1,5 @@
 menu "package config"
 
-source "$(root_path)/package/pack_temp/Kconfig"
+source "$(pro_top_path)/package/pack_temp/Kconfig"
 
 endmenu

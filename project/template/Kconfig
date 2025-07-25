@@ -6,27 +6,27 @@
 #####################################################
 #                   标准配置，不要修改
 #####################################################
-mainmenu "CK TOOL CONFIG"
-#配置顶层路径，这里可以修改为工程实际路径
-root_path := ../..
+mainmenu "CK TOOLS CONFIG"
+#配置ck_tools的路径
+ck_tools_path := ../..
 #配置工程路径
-pro_path = .
+pro_top_path = ../
 
 #导出变量给Cmake使用
-config ROOT_PATH
+config CK_TOOLS_PATH
     string
-    default "$(root_path)"
+    default "$(ck_tools_path)"
     
-config PRO_PATH
+config PRO_TOP_PATH
     string 
-    default "$(pro_path)"
+    default "$(pro_top_path)"
 
 # 引入工具链管理
-source "$(root_path)/tools/script/Kconfig.toolchain"
+source "$(ck_tools_path)/ck_tools/script/Kconfig.toolchain"
 
 #判断是否使用实例
 if(CK_EXAMPLE_DIS)
-    source "$(root_path)/tools/script/Kconfig.example"
+    source "$(ck_tools_path)/ck_tools/script/Kconfig.example"
 endif
 
 #####################################################
@@ -46,5 +46,5 @@ menu "project config"
 endmenu
 
 #引入的外部模块配置
-source "$(root_path)/package/Kconfig"
-source "$(root_path)/driver/Kconfig"
+source "$(pro_top_path)/package/Kconfig"
+source "$(pro_top_path)/driver/Kconfig"

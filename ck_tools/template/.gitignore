@@ -1,9 +1,0 @@
-# 编译最终文件
-bin/
-# 编译过程文件
-build/
-
-# ck过程文件，可以由再次构建生成
-.config.old
-ck_config.cmake
-ck_config.h
