@@ -9,9 +9,9 @@ cmake_minimum_required(VERSION 3.10)
 # 引入kconfig配置
 include(ck_config.cmake)
 # 引入cmakelib
-include(${CK_TOOLS_PATH}/ck_tools/script/ck_cmlib.cmake)
+include(${CK_TOOLS_PATH}/ck_tools/ck_cmlib.cmake)
 # 引入工具链配置
-include(${CK_TOOLS_PATH}/ck_tools/script/ck_toolchain.cmake)
+include(${CK_TOOLS_PATH}/ck_tools/ck_toolchain.cmake)
 
 # 工程名字
 project(${PRO_NAME})

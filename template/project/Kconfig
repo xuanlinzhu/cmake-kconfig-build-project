@@ -22,7 +22,7 @@ config PRO_TOP_PATH
     default "$(pro_top_path)"
 
 # 引入工具链管理
-source "$(ck_tools_path)/ck_tools/script/Kconfig.toolchain"
+source "$(ck_tools_path)/ck_tools/Kconfig.toolchain"
 
 #####################################################
 #                   用户配置，按需修改
