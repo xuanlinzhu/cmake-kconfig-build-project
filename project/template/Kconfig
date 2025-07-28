@@ -24,10 +24,7 @@ config PRO_TOP_PATH
 # 引入工具链管理
 source "$(ck_tools_path)/ck_tools/script/Kconfig.toolchain"
 
-#判断是否使用实例
-if(CK_EXAMPLE_DIS)
-    source "$(ck_tools_path)/ck_tools/script/Kconfig.example"
-endif
+
 
 #####################################################
 #                   用户配置，按需修改
@@ -42,8 +39,12 @@ menu "project config"
     config CK_EXAMPLE_DIS
         bool "display Kconfig example"
         default n
-
 endmenu
+
+#判断是否使用实例
+if(CK_EXAMPLE_DIS)
+    source "Kconfig.example"
+endif
 
 #引入的外部模块配置
 source "$(pro_top_path)/package/Kconfig"
