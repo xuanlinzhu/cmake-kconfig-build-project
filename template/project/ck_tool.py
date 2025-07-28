@@ -13,7 +13,7 @@ import tkinter as tk
 from tkinter import scrolledtext
 
 # ck_tools path
-ck_tools_path = "../../"
+ck_tools_path = "../.."
 
 # Python path
 py_path = sys.executable  

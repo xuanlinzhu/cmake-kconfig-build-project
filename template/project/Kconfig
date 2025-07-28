@@ -10,7 +10,7 @@ mainmenu "CK TOOLS CONFIG"
 #配置ck_tools的路径
 ck_tools_path := ../..
 #配置工程路径
-pro_top_path = ../
+pro_top_path = ..
 
 #导出变量给Cmake使用
 config CK_TOOLS_PATH
