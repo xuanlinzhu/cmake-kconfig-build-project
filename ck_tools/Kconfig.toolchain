@@ -140,6 +140,13 @@ config TC_LINK_OPTIONS
     help
       Additional flags to pass to the linker.
 
+# 设置库搜索路径
+config TC_LIBRARY_DIRS
+    string "Library search paths"
+    default ""
+    help
+      Additional flags to pass to the Library search paths.
+
 # 设置target 链接
 config TC_LINK_LIBRARIES
     string "link libraries"
