@@ -38,9 +38,23 @@ find_current_header_dir()
 set_external_path("${PRO_TOP_PATH}/package" "package")
 set_external_path("${PRO_TOP_PATH}/driver" "driver")
 
-link_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
 ############################标准设置，不修改###################################
+
+# 添加链接库路径
+if(DEFINED TC_LIBRARY_DIRS AND NOT TC_LIBRARY_DIRS STREQUAL "")
+    string(REPLACE " " ";" TC_LIBRARY_DIRS_LIST "${TC_LIBRARY_DIRS}")
+
+    set(_resolved_lib_dirs "")
+    foreach(dir ${TC_LIBRARY_DIRS_LIST})
+        # 将每个路径转换为绝对路径（相对路径会基于当前CMakeLists.txt解析）
+        get_filename_component(abs_dir "${dir}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+        list(APPEND _resolved_lib_dirs "${abs_dir}")
+    endforeach()
+
+    link_directories(${_resolved_lib_dirs})
+
+    message(STATUS "Added library paths (resolved): ${_resolved_lib_dirs}")
+endif()
 
 # 排除搜索路径
 find_cmakelists_current_dir("build" "bin")
@@ -65,25 +79,6 @@ if(DEFINED TC_DEFINE_MACROS AND NOT TC_DEFINE_MACROS STREQUAL "")
     message(STATUS "Added macro definitions: ${TC_DEFINE_MACROS}")
 endif()
 
-
-# 添加链接库路径
-if(DEFINED TC_LIBRARY_DIRS AND NOT TC_LIBRARY_DIRS STREQUAL "")
-    string(REPLACE " " ";" TC_LIBRARY_DIRS_LIST "${TC_LIBRARY_DIRS}")
-
-    set(_resolved_lib_dirs "")
-    foreach(dir ${TC_LIBRARY_DIRS_LIST})
-        # 将每个路径转换为绝对路径（相对路径会基于当前CMakeLists.txt解析）
-        get_filename_component(abs_dir "${dir}" REALPATH BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-        list(APPEND _resolved_lib_dirs "${abs_dir}")
-    endforeach()
-
-    link_directories(${_resolved_lib_dirs})
-
-    message(STATUS "Added library paths (resolved): ${_resolved_lib_dirs}")
-endif()
-
-
-
 # 添加链接库
 if(DEFINED TC_LINK_LIBRARIES AND NOT TC_LINK_LIBRARIES STREQUAL "")
     # 把空格分隔的字符串转换成CMake列表
@@ -95,7 +90,6 @@ if(DEFINED TC_LINK_LIBRARIES AND NOT TC_LINK_LIBRARIES STREQUAL "")
     message(STATUS "Added link libraries options: ${TC_LINK_LIBRARIES}")
 endif()
 
-# 
 # bin 文件生成
 if(DEFINED TC_GENERATE_BIN)
         add_custom_command(TARGET ${PRO_NAME} POST_BUILD
