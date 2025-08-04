@@ -102,13 +102,13 @@ config TC_CROSSCOMPILING
 
 config TC_C_STANDARD
     string "C Language Standard"
-    default "c11"
+    default ""
     help
       Specify the C language standard version, e.g., 99, 11, 17.
 
 config TC_CXX_STANDARD
     string "C++ Language Standard"
-    default "c++11"
+    default ""
     help
       Specify the C++ language standard version, e.g., 11, 14, 17.
 
