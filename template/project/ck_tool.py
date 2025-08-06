@@ -76,7 +76,7 @@ class CKTool:
     def guiconfig(self, param=None):
         self.logger("Executing config operation...")
 
-        menuconfig_fullpath = os.path.join(ck_tools_path, "tools/script/menuconfig.py")
+        menuconfig_fullpath = os.path.join(ck_tools_path, "ck_tools/menuconfig.py")
         fallback_cmds = [
             [py_path, menuconfig_fullpath, "Kconfig"],
             ["menuconfig"],
@@ -202,7 +202,7 @@ class CKGui:
 
     def add_buttons(self):
         btns = {
-            "配 置": lambda: self.run(self.tool.guiconfig),
+            # "配 置": lambda: self.run(self.tool.guiconfig),
             "构 建": lambda: self.run(self.tool.build),
             "编 译": lambda: self.run(self.tool.make),
             "清 除": lambda: self.run(self.tool.clean),
