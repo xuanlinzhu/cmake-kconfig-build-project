@@ -24,6 +24,15 @@ function(print_paths)
     message(STATUS "源路径: ${CMAKE_CURRENT_SOURCE_DIR}，构建路径: ${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
+#------------------辅助函数: 归一化路径------------------#
+function(normalize_path INPUT_PATH OUTPUT_VAR)
+    # 转换为 CMake 风格路径
+    file(TO_CMAKE_PATH "${INPUT_PATH}" TMP_PATH)
+    # 去掉末尾斜杠
+    string(REGEX REPLACE "/$" "" TMP_PATH "${TMP_PATH}")
+    set(${OUTPUT_VAR} "${TMP_PATH}" PARENT_SCOPE)
+endfunction()
+
 #------------------查找当前目录的源文件------------------#
 function(find_current_source_file)
     file(GLOB CURRENT_CODE_SOURCES ${ALL_SOURCES_TYPES})
@@ -56,52 +65,60 @@ function(find_recurse_source_file )
     endif()
 endfunction()
 
-#------------------添加当前目录下的特定源文件------------------#
-function(add_some_source_file )
+#------------------添加源文件------------------#
+function(add_some_source_file)
     set(ADD_FILES "")
-    # 遍历所有输入参数
     foreach(F_NAME ${ARGN})
-        # 判断输入函数是否为空
         if(F_NAME)
-            # message(STATUS "添加特定源文件:${F_NAME}")
-            list(APPEND ADD_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME})
+            if(IS_ABSOLUTE "${F_NAME}")
+                set(ABS_FILE "${F_NAME}")
+            else()
+                set(ABS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME}")
+            endif()
+            normalize_path("${ABS_FILE}" ABS_FILE)
+            list(APPEND ADD_FILES "${ABS_FILE}")
         endif()
     endforeach()
-    
-    # 如果添加了源文件，则将其添加到顶层目录的变量中
     if(ADD_FILES)
         message(STATUS "添加源文件:${ADD_FILES}")
-        # 将当前获取的文件传输至全局变量
-        set_property( GLOBAL APPEND PROPERTY ALL_CODE_SOURCES ${ADD_FILES}) 
+        set_property(GLOBAL APPEND PROPERTY ALL_CODE_SOURCES ${ADD_FILES})
     endif()
 endfunction()
 
-
-#------------------从全局变量中移除特定源文件------------------#
-function(remove_some_source_file )
-    # 获取全局变量中的所有文件
+#------------------移除源文件------------------#
+function(remove_some_source_file)
     get_property(ALL_FILES GLOBAL PROPERTY ALL_CODE_SOURCES)
     if(NOT ALL_FILES)
-        message(STATUS "没有文件可移除")
+        message(STATUS "没有源文件可移除")
         return()
     endif()
 
-    # 遍历所有输入参数
     foreach(F_NAME ${ARGN})
-        # 判断输入文件名是否为空
         if(F_NAME)
-            set(REMOVE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME}")
-            list(FIND ALL_FILES "${REMOVE_FILE}" INDEX)
+            if(IS_ABSOLUTE "${F_NAME}")
+                set(REMOVE_FILE "${F_NAME}")
+            else()
+                set(REMOVE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME}")
+            endif()
+            normalize_path("${REMOVE_FILE}" REMOVE_FILE)
+
+            # 归一化全局列表
+            set(NORMALIZED_LIST "")
+            foreach(P ${ALL_FILES})
+                normalize_path("${P}" NP)
+                list(APPEND NORMALIZED_LIST "${NP}")
+            endforeach()
+
+            list(FIND NORMALIZED_LIST "${REMOVE_FILE}" INDEX)
             if(NOT INDEX EQUAL -1)
                 list(REMOVE_AT ALL_FILES ${INDEX})
-                message(STATUS "移除特定源文件: ${REMOVE_FILE}")
+                message(STATUS "移除源文件: ${REMOVE_FILE}")
             else()
-                message(WARNING "文件 ${REMOVE_FILE} 不存在于 ALL_CODE_SOURCES 中")
+                message(WARNING "源文件 ${REMOVE_FILE} 不存在于 ALL_CODE_SOURCES 中")
             endif()
         endif()
     endforeach()
 
-    # 更新全局变量
     set_property(GLOBAL PROPERTY ALL_CODE_SOURCES "${ALL_FILES}")
 endfunction()
 
@@ -150,23 +167,60 @@ function(find_recurse_header_dir )
     endif()
 endfunction()
 
-#------------------添加特定的引用路径------------------#
-function(add_some_header_dir )
-    set(ADD_FILES "")
-    # 遍历所有输入参数
-    foreach(F_NAME ${ARGN})
-        # 判断输入函数是否为空
-        if(F_NAME)
-            list(APPEND ADD_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME})
+#------------------添加引用路径------------------#
+function(add_some_header_dir)
+    set(ADD_PATHS "")
+    foreach(D_NAME ${ARGN})
+        if(D_NAME)
+            if(IS_ABSOLUTE "${D_NAME}")
+                set(ABS_PATH "${D_NAME}")
+            else()
+                set(ABS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${D_NAME}")
+            endif()
+            normalize_path("${ABS_PATH}" ABS_PATH)
+            list(APPEND ADD_PATHS "${ABS_PATH}")
         endif()
     endforeach()
-    
-    # 如果添加了路径，则将其添加到顶层目录的变量中
-    if(ADD_FILES)
-        message(STATUS "添加引用:${ADD_FILES}")
-        # 将当前获取的文件传输至全局变量
-        set_property( GLOBAL APPEND PROPERTY ALL_CODE_INCLUDES ${ADD_FILES}) 
+    if(ADD_PATHS)
+        message(STATUS "添加引用:${ADD_PATHS}")
+        set_property(GLOBAL APPEND PROPERTY ALL_CODE_INCLUDES ${ADD_PATHS})
     endif()
+endfunction()
+
+#------------------移除引用路径------------------#
+function(remove_some_header_dir)
+    get_property(ALL_PATHS GLOBAL PROPERTY ALL_CODE_INCLUDES)
+    if(NOT ALL_PATHS)
+        message(STATUS "没有引用路径可移除")
+        return()
+    endif()
+
+    foreach(D_NAME ${ARGN})
+        if(D_NAME)
+            if(IS_ABSOLUTE "${D_NAME}")
+                set(REMOVE_PATH "${D_NAME}")
+            else()
+                set(REMOVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/${D_NAME}")
+            endif()
+            normalize_path("${REMOVE_PATH}" REMOVE_PATH)
+
+            set(NORMALIZED_LIST "")
+            foreach(P ${ALL_PATHS})
+                normalize_path("${P}" NP)
+                list(APPEND NORMALIZED_LIST "${NP}")
+            endforeach()
+
+            list(FIND NORMALIZED_LIST "${REMOVE_PATH}" INDEX)
+            if(NOT INDEX EQUAL -1)
+                list(REMOVE_AT ALL_PATHS ${INDEX})
+                message(STATUS "移除引用路径: ${REMOVE_PATH}")
+            else()
+                message(WARNING "引用路径 ${REMOVE_PATH} 不存在于 ALL_CODE_INCLUDES 中")
+            endif()
+        endif()
+    endforeach()
+
+    set_property(GLOBAL PROPERTY ALL_CODE_INCLUDES "${ALL_PATHS}")
 endfunction()
 
 #------------------加入当前目录的静态库------------------#
@@ -202,23 +256,60 @@ function(find_recurse_library_file )
     endif()
 endfunction()
 
-#------------------添加当前目录下的特定源文件------------------#
-function(add_some_library_file )
-    set(ADD_FILES "")
-    # 遍历所有输入参数
-    foreach(F_NAME ${ARGN})
-        # 判断输入函数是否为空
-        if(F_NAME)
-            list(APPEND ADD_FILES ${CMAKE_CURRENT_SOURCE_DIR}/${F_NAME})
+#------------------添加静态库------------------#
+function(add_some_library_file)
+    set(ADD_LIBS "")
+    foreach(L_NAME ${ARGN})
+        if(L_NAME)
+            if(IS_ABSOLUTE "${L_NAME}")
+                set(ABS_LIB "${L_NAME}")
+            else()
+                set(ABS_LIB "${CMAKE_CURRENT_SOURCE_DIR}/${L_NAME}")
+            endif()
+            normalize_path("${ABS_LIB}" ABS_LIB)
+            list(APPEND ADD_LIBS "${ABS_LIB}")
         endif()
     endforeach()
-    
-    # 如果添加了源文件，则将其添加到顶层目录的变量中
-    if(ADD_FILES)
-        message(STATUS "添加静态库:${ADD_FILES}")
-        # 将当前获取的文件传输至全局变量
-        set_property( GLOBAL APPEND PROPERTY ALL_CODE_LIBRARIES ${ADD_FILES}) 
+    if(ADD_LIBS)
+        message(STATUS "添加静态库:${ADD_LIBS}")
+        set_property(GLOBAL APPEND PROPERTY ALL_CODE_LIBRARIES ${ADD_LIBS})
     endif()
+endfunction()
+
+#------------------移除静态库------------------#
+function(remove_some_library_file)
+    get_property(ALL_LIBS GLOBAL PROPERTY ALL_CODE_LIBRARIES)
+    if(NOT ALL_LIBS)
+        message(STATUS "没有静态库可移除")
+        return()
+    endif()
+
+    foreach(L_NAME ${ARGN})
+        if(L_NAME)
+            if(IS_ABSOLUTE "${L_NAME}")
+                set(REMOVE_LIB "${L_NAME}")
+            else()
+                set(REMOVE_LIB "${CMAKE_CURRENT_SOURCE_DIR}/${L_NAME}")
+            endif()
+            normalize_path("${REMOVE_LIB}" REMOVE_LIB)
+
+            set(NORMALIZED_LIST "")
+            foreach(P ${ALL_LIBS})
+                normalize_path("${P}" NP)
+                list(APPEND NORMALIZED_LIST "${NP}")
+            endforeach()
+
+            list(FIND NORMALIZED_LIST "${REMOVE_LIB}" INDEX)
+            if(NOT INDEX EQUAL -1)
+                list(REMOVE_AT ALL_LIBS ${INDEX})
+                message(STATUS "移除静态库: ${REMOVE_LIB}")
+            else()
+                message(WARNING "静态库 ${REMOVE_LIB} 不存在于 ALL_CODE_LIBRARIES 中")
+            endif()
+        endif()
+    endforeach()
+
+    set_property(GLOBAL PROPERTY ALL_CODE_LIBRARIES "${ALL_LIBS}")
 endfunction()
 
 #------------------添加项目源码的顶层构建文件------------------#
@@ -342,4 +433,3 @@ function(print_all_code_librarys)
         set(${ALL_LIBRARYS} ${LIB_LIST} PARENT_SCOPE)
     endif()
 endfunction()
-
