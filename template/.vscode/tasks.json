@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "CKTool Task",
+      "type": "shell",
+      "command": "${config:CKTool.pythonWin}",
+      "windows": { "command": "${config:CKTool.pythonWin}" },
+      "linux":   { "command": "${config:CKTool.pythonLinux}" },
+      "args": [
+        "${workspaceFolder}/project/${config:CKTool.PrjDirName}/ck_tool.py",
+        "${input:ck_cmd}"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/project/${config:CKTool.PrjDirName}"
+      },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "ck_cmd",
+      "type": "pickString",
+      "description": "选择 CKTool 命令",
+      "options": [
+        { "label": "自动", "value": "auto" },
+        { "label": "配置", "value": "config" },
+        { "label": "构建", "value": "build" },
+        { "label": "编译", "value": "make" },
+        { "label": "清除", "value": "clean" }
+      ],
+      "default": "auto"
+    }
+  ]
+}

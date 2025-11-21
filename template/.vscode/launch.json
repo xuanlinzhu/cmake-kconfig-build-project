@@ -1,0 +1,73 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "CKTool Run/Debug",
+      "type": "cppdbg",
+      "request": "launch",
+
+      // 默认linux
+      "program": "${workspaceFolder}/project/${config:CKTool.PrjDirName}/bin/${config:CKTool.AppName}",
+      "miDebuggerPath": "${config:CKTool.GdbLinux}",
+        
+      "windows": {
+        "program": "${workspaceFolder}/project/${config:CKTool.PrjDirName}/bin/${config:CKTool.AppName}",
+        "miDebuggerPath": "${config:CKTool.GdbWin}" 
+      },
+
+      "cwd": "${workspaceFolder}/project/${config:CKTool.PrjDirName}",
+      "args": [],
+      "preLaunchTask": "CKTool Task",
+
+      // 不要配置，配置了就直接进入Debug模式
+      // "stopAtEntry": true,
+      // 不需要额外窗口
+      // "externalConsole": true,
+      "MIMode": "gdb",
+
+      "setupCommands": [
+        { "description": "Enable pretty printing", "text": "-enable-pretty-printing" }
+      ],
+      "logging": { "engineLogging": true, "trace": true, "traceResponse": true }
+      
+    },
+    {
+      "name": "Remote Debug(User)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/project/${config:CKTool.PrjDirName}/bin/${config:CKTool.AppName}",
+      "cwd": "${workspaceFolder}/project/${config:CKTool.PrjDirName}",
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb-multiarch",
+      "miDebuggerServerAddress": "${config:CKTool.GdbServerIP}:${config:CKTool.GdbServerPort}",
+      "stopAtEntry": true,
+      "externalConsole": false,
+      "setupCommands": [
+        {
+          "description": "Enable pretty printing",
+          "text": "-enable-pretty-printing"
+        },
+        {
+          "description": "Set architecture to ARM",
+          "text": "set architecture arm"
+        },
+        {
+          "description": "Set sysroot for Petalinux",
+          "text": "set sysroot /opt/petalinux/2020.2/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi"
+        },
+        {
+          "description": "Ignore SIG34",
+          "text": "handle SIG34 nostop noprint pass",
+          "ignoreFailures": true
+        }
+      ],
+      "logging": {
+        "engineLogging": true,
+        "trace": true,
+        "traceResponse": true
+      }
+    }    
+  ]
+}
+
+

@@ -1,0 +1,18 @@
+{
+  // 项目文件夹名字
+  "CKTool.PrjDirName": "test",
+  "CKTool.AppName": "ck_project.exe",
+
+  // 这里需要注意，win 下面需要使用powershell
+  // linux下 使用bash，是依靠这个来区别系统的
+  // Python 可执行文件路径
+  "CKTool.pythonWin": "python.exe",
+  "CKTool.pythonLinux": "/usr/bin/python3",
+
+  // GDB 路径
+  "CKTool.GdbWin": "D:/mingw64/bin/gdb.exe",
+  "CKTool.GdbLinux": "/usr/bin/gdb-multiarch",
+
+  "CKTool.GdbServerIP": "192.168.2.96",
+  "CKTool.GdbServerPort": "1234",
+}
