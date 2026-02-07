@@ -1,7 +1,20 @@
 {
+  // 引用规则模版
+  "json.schemas": [
+    {
+      "fileMatch": [".vscode/settings.json"],
+      "url": "./.vscode/cktool-schema.json"
+    }
+  ],
   // 项目文件夹名字
   "CKTool.PrjDirName": "test",
-  "CKTool.AppName": "ck_project.exe",
+  // 应用程序名字
+  "CKTool.AppName": "ck_project", 
+
+  // 测试文件夹名字
+  "CKTool.TestDirName": "template",
+  // 测试程序名字
+  "CKTool.UnitName": "template", 
 
   // 这里需要注意，win 下面需要使用powershell
   // linux下 使用bash，是依靠这个来区别系统的
@@ -13,6 +26,8 @@
   "CKTool.GdbWin": "D:/mingw64/bin/gdb.exe",
   "CKTool.GdbLinux": "/usr/bin/gdb-multiarch",
 
-  "CKTool.GdbServerIP": "192.168.2.96",
+  // GDB 服务器 IP 端口
+  "CKTool.GdbServerIP": "192.168.2.201",
   "CKTool.GdbServerPort": "1234",
+  "cmake.sourceDirectory": "E:/01_Linux_Share/02_Code/dqgx_app/driver/tcp_server",
 }

@@ -1,0 +1,59 @@
+# Author: zhuxuanlin
+# Email: xuanlinzhu@qq.com
+# Date: 2025-6-28
+# Version: 2.0.0
+
+#####################################################
+#                   标准配置，不要修改
+#####################################################
+mainmenu "CK TOOLS CONFIG"
+#配置ck_tools的路径
+ck_tools_path := ../../../
+#配置工程路径
+pro_top_path = ../..
+
+#导出变量给Cmake使用
+config CK_TOOLS_PATH
+    string
+    default "$(ck_tools_path)"
+    
+config PRO_TOP_PATH
+    string 
+    default "$(pro_top_path)"
+
+# 引入工具链管理
+source "$(ck_tools_path)/ck_tools/Kconfig.toolchain"
+
+#####################################################
+#                   用户配置，按需修改
+#####################################################
+
+
+menu "project config"
+    # 决定生成文件的名字
+	config PRO_NAME
+        string "project name"
+        default "uinit_test"
+        
+    # 测试类型选择
+    choice
+        prompt "Select test type"
+        default PRO_TEST_UNIT
+
+        config PRO_TEST_UNIT
+            bool "Unit test"
+
+        config PRO_TEST_INTEGRATION
+            bool "Integration test"
+
+        config PRO_TEST_NONE
+            bool "None"
+
+    endchoice
+
+    
+endmenu
+
+source "$(pro_top_path)/driver/Kconfig"
+source "$(pro_top_path)/package/Kconfig"
+

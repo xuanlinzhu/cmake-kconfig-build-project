@@ -11,7 +11,7 @@
       "miDebuggerPath": "${config:CKTool.GdbLinux}",
         
       "windows": {
-        "program": "${workspaceFolder}/project/${config:CKTool.PrjDirName}/bin/${config:CKTool.AppName}",
+        "program": "${workspaceFolder}/project/${config:CKTool.PrjDirName}/bin/${config:CKTool.AppName}.exe",
         "miDebuggerPath": "${config:CKTool.GdbWin}" 
       },
 
@@ -19,6 +19,34 @@
       "args": [],
       "preLaunchTask": "CKTool Task",
 
+      // 不要配置，配置了就直接进入Debug模式
+      // "stopAtEntry": true,
+      // 不需要额外窗口
+      // "externalConsole": true,
+      "MIMode": "gdb",
+
+      "setupCommands": [
+        { "description": "Enable pretty printing", "text": "-enable-pretty-printing" }
+      ],
+      "logging": { "engineLogging": true, "trace": true, "traceResponse": true }
+      
+    },
+    {
+      "name": "Test Run/Debug",
+      "type": "cppdbg",
+      "request": "launch",
+
+      // 默认linux
+      "program": "${workspaceFolder}/tests/${config:CKTool.TestDirName}/bin/${config:CKTool.UnitName}",
+      "miDebuggerPath": "${config:CKTool.GdbLinux}",
+        
+      "windows": {
+        "program": "${workspaceFolder}/tests/${config:CKTool.TestDirName}/bin/${config:CKTool.UnitName}.exe",
+        "miDebuggerPath": "${config:CKTool.GdbWin}" 
+      },
+
+      "cwd": "${workspaceFolder}/tests/${config:CKTool.TestDirName}",
+      "args": [],
       // 不要配置，配置了就直接进入Debug模式
       // "stopAtEntry": true,
       // 不需要额外窗口

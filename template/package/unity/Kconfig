@@ -1,0 +1,15 @@
+menuconfig PACK_UNITY_ENABLE
+    bool "enable Unity Test"
+    default n
+
+if(PACK_UNITY_ENABLE)
+
+config PACK_UNITY_EX_FIXTURE
+    bool "Use fixture"
+    default n
+
+config PACK_UNITY_EX_MEMORY
+    bool "Use memory"
+    default n
+
+endif

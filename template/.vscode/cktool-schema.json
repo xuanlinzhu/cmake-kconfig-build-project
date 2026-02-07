@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "properties": {
+    "CKTool.PrjDirName": { 
+      "type": "string", 
+      "description": "项目文件夹名字",
+      "enum": ["test"],
+      "default": "test"
+    },
+    "CKTool.AppName": { 
+      "type": "string", 
+      "description": "应用程序名字",
+      "enum": ["ck_project"],
+      "default": "ck_project"
+    },
+    "CKTool.TestDirName": { 
+      "type": "string", 
+      "description": "测试文件夹名字",
+      "enum": ["template"],
+      "default": "template"
+    },
+    "CKTool.UnitName": { 
+      "type": "string", 
+      "description": "测试程序名字",
+      "default": "template"
+    },
+    "CKTool.pythonWin": { 
+      "type": "string", 
+      "description": "Windows 下 Python 可执行文件路径",
+      "default": "python.exe"
+    },
+    "CKTool.pythonLinux": { 
+      "type": "string", 
+      "description": "Linux 下 Python 可执行文件路径", 
+      "default": "/usr/bin/python3"
+    },
+    "CKTool.GdbWin": { 
+      "type": "string", 
+      "description": "Windows 下 GDB 可执行文件路径",
+      "default": "D:/mingw64/bin/gdb.exe" 
+    },
+    "CKTool.GdbLinux": { 
+      "type": "string", 
+      "description": "Linux 下 GDB 可执行文件路径",
+      "default": "/usr/bin/gdb-multiarch" 
+    },
+    "CKTool.GdbServerIP": { 
+      "type": "string", 
+      "description": "GDB 服务器 IP",
+      "default": "192.168.2.98" 
+    },
+    "CKTool.GdbServerPort": { 
+      "type": "string", 
+      "description": "GDB 服务器端口",
+      "default": "6666" 
+    }
+  },
+  "required": [
+    "CKTool.PrjDirName",
+    "CKTool.AppName",
+    "CKTool.TestDirName",
+    "CKTool.UnitName",
+    "CKTool.pythonWin",
+    "CKTool.pythonLinux",
+    "CKTool.GdbWin",
+    "CKTool.GdbLinux",
+    "CKTool.GdbServerIP",
+    "CKTool.GdbServerPort"
+  ]
+}
