@@ -122,6 +122,7 @@ set(ELF_FILE  $<TARGET_FILE:${CMAKE_PROJECT_NAME}>)
 set(BIN_FILE  ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.bin)
 set(DIS_FILE  ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.dis)
 
+
 # size 输出到文本文件，方便查看
 set(SIZE_FILE ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.size.txt)
 
@@ -152,26 +153,29 @@ endif()
 
 # --------------------------------------------------
 # 生成 dis
-# Windows 下用 CMAKE_COMMAND -E env + cmd /c 更稳
+# 不直接用 shell 重定向，避免 Windows 下引号/转义问题
 # --------------------------------------------------
 if(CMAKE_OBJDUMP)
-    if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-        add_custom_command(
-            OUTPUT ${DIS_FILE}
-            COMMAND cmd /c "\"${CMAKE_OBJDUMP}\" -D \"${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.elf\" > \"${DIS_FILE}\""
-            DEPENDS ${CMAKE_PROJECT_NAME}
-            COMMENT "Generate ${CMAKE_PROJECT_NAME}.dis"
-            VERBATIM
-        )
-    else()
-        add_custom_command(
-            OUTPUT ${DIS_FILE}
-            COMMAND /bin/sh -c "\"${CMAKE_OBJDUMP}\" -D \"${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.elf\" > \"${DIS_FILE}\""
-            DEPENDS ${CMAKE_PROJECT_NAME}
-            COMMENT "Generate ${CMAKE_PROJECT_NAME}.dis"
-            VERBATIM
-        )
-    endif()
+    set(OBJDUMP_SCRIPT ${CMAKE_BINARY_DIR}/objdump_to_file.cmake)
+
+    file(WRITE ${OBJDUMP_SCRIPT}
+"execute_process(
+    COMMAND \"${CMAKE_OBJDUMP}\" -D \"${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.elf\"
+    OUTPUT_FILE \"${DIS_FILE}\"
+    RESULT_VARIABLE _objdump_result
+)
+if(NOT _objdump_result EQUAL 0)
+    message(FATAL_ERROR \"objdump failed: \${_objdump_result}\")
+endif()
+")
+
+    add_custom_command(
+        OUTPUT ${DIS_FILE}
+        COMMAND ${CMAKE_COMMAND} -P ${OBJDUMP_SCRIPT}
+        DEPENDS ${CMAKE_PROJECT_NAME}
+        COMMENT "Generate ${CMAKE_PROJECT_NAME}.dis"
+        VERBATIM
+    )
 
     add_custom_target(${CMAKE_PROJECT_NAME}_dis ALL DEPENDS ${DIS_FILE})
 endif()
@@ -192,3 +196,5 @@ if(CMAKE_SIZE)
 
     add_custom_target(${CMAKE_PROJECT_NAME}_size ALL DEPENDS ${SIZE_FILE})
 endif()
+
+

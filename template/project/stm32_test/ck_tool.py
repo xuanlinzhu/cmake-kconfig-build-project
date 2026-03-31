@@ -68,7 +68,8 @@ def run_subprocess(cmd_list, cwd=None, capture_output=True):
             shell=False,
             stdout=subprocess.PIPE if capture_output else None,
             stderr=subprocess.STDOUT,
-            encoding="utf-8",
+            encoding="gbk" if is_windows() else "utf-8",
+            errors="replace",
         )
         if capture_output:
             for line in process.stdout:
