@@ -98,7 +98,6 @@ endif()
 
 # --------------------------------------------------
 # 工具查找
-# 优先使用 CMake 已识别工具，否则自己推导
 # --------------------------------------------------
 if(NOT CMAKE_OBJCOPY)
     find_program(CMAKE_OBJCOPY arm-none-eabi-objcopy)
@@ -117,6 +116,16 @@ message(STATUS "CMAKE_OBJDUMP = ${CMAKE_OBJDUMP}")
 message(STATUS "CMAKE_SIZE    = ${CMAKE_SIZE}")
 
 # --------------------------------------------------
+# 目标文件路径
+# --------------------------------------------------
+set(ELF_FILE  $<TARGET_FILE:${CMAKE_PROJECT_NAME}>)
+set(BIN_FILE  ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.bin)
+set(DIS_FILE  ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.dis)
+
+# size 输出到文本文件，方便查看
+set(SIZE_FILE ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.size.txt)
+
+# --------------------------------------------------
 # 生成 map 文件
 # map 文件必须在链接阶段生成
 # --------------------------------------------------
@@ -127,42 +136,59 @@ target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
 )
 
 # --------------------------------------------------
-# 生成 bin / dis / 打印段大小
+# 生成 bin
 # --------------------------------------------------
 if(CMAKE_OBJCOPY)
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_OBJCOPY}
-                -O binary
-                $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
-                ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.bin
-        COMMENT "Generate binary file"
+    add_custom_command(
+        OUTPUT ${BIN_FILE}
+        COMMAND ${CMAKE_OBJCOPY} -O binary ${ELF_FILE} ${BIN_FILE}
+        DEPENDS ${CMAKE_PROJECT_NAME}
+        COMMENT "Generate ${CMAKE_PROJECT_NAME}.bin"
         VERBATIM
     )
+
+    add_custom_target(${CMAKE_PROJECT_NAME}_bin ALL DEPENDS ${BIN_FILE})
 endif()
 
+# --------------------------------------------------
+# 生成 dis
+# Windows 下用 CMAKE_COMMAND -E env + cmd /c 更稳
+# --------------------------------------------------
 if(CMAKE_OBJDUMP)
     if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
-        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND cmd /c
-                    "\"${CMAKE_OBJDUMP}\" -D \"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>\" > \"${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.dis\""
-            COMMENT "Generate disassembly file"
+        add_custom_command(
+            OUTPUT ${DIS_FILE}
+            COMMAND cmd /c "\"${CMAKE_OBJDUMP}\" -D \"${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.elf\" > \"${DIS_FILE}\""
+            DEPENDS ${CMAKE_PROJECT_NAME}
+            COMMENT "Generate ${CMAKE_PROJECT_NAME}.dis"
             VERBATIM
         )
     else()
-        add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-            COMMAND /bin/sh -c
-                    "\"${CMAKE_OBJDUMP}\" -D \"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>\" > \"${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.dis\""
-            COMMENT "Generate disassembly file"
+        add_custom_command(
+            OUTPUT ${DIS_FILE}
+            COMMAND /bin/sh -c "\"${CMAKE_OBJDUMP}\" -D \"${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.elf\" > \"${DIS_FILE}\""
+            DEPENDS ${CMAKE_PROJECT_NAME}
+            COMMENT "Generate ${CMAKE_PROJECT_NAME}.dis"
             VERBATIM
         )
     endif()
+
+    add_custom_target(${CMAKE_PROJECT_NAME}_dis ALL DEPENDS ${DIS_FILE})
 endif()
 
+# --------------------------------------------------
+# 打印并保存 ELF 段大小
+# 注意：这里既打印到终端，也输出到文件
+# --------------------------------------------------
 if(CMAKE_SIZE)
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_SIZE} --format=berkeley $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
-        COMMAND ${CMAKE_SIZE} -A $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
-        COMMENT "Print ELF section sizes"
+    add_custom_command(
+        OUTPUT ${SIZE_FILE}
+        COMMAND ${CMAKE_SIZE} --format=berkeley ${ELF_FILE}
+        COMMAND ${CMAKE_SIZE} -A ${ELF_FILE} > ${SIZE_FILE}
+        DEPENDS ${CMAKE_PROJECT_NAME}
+        COMMENT "Print and save ELF section sizes"
         VERBATIM
     )
+
+    add_custom_target(${CMAKE_PROJECT_NAME}_size ALL DEPENDS ${SIZE_FILE})
 endif()
