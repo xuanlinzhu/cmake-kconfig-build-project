@@ -51,6 +51,9 @@ set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES SUFFIX ".elf")
 # --------------------------------------------------
 add_subdirectory(cmake/stm32cubemx)
 
+# 获取当前目录的头文件
+find_current_header_dir()
+
 # 外部模块
 set_external_path("${PRO_TOP_PATH}/package" "package")
 set_external_path("${PRO_TOP_PATH}/driver" "driver")
