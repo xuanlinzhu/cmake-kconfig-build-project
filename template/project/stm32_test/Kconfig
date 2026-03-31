@@ -1,0 +1,49 @@
+# Author: zhuxuanlin
+# Email: xuanlinzhu@qq.com
+# Date: 2025-6-28
+# Version: 2.0.0
+
+#####################################################
+#                   标准配置，不要修改
+#####################################################
+mainmenu "CK TOOLS CONFIG"
+#配置ck_tools的路径
+ck_tools_path := ../../..
+#配置工程路径
+pro_top_path = ../..
+
+#导出变量给Cmake使用
+config CK_TOOLS_PATH
+    string
+    default "$(ck_tools_path)"
+    
+config PRO_TOP_PATH
+    string 
+    default "$(pro_top_path)"
+
+# 引入工具链管理
+source "$(ck_tools_path)/ck_tools/Kconfig.toolchain"
+
+#####################################################
+#                   用户配置，按需修改
+#####################################################
+menu "project config"
+    # 决定生成文件的名字
+	config PRO_NAME
+        string "project name"
+        default "ck_project" 
+
+    # 正式工程删除此选项
+    config CK_EXAMPLE_DIS
+        bool "display Kconfig example"
+        default n
+endmenu
+
+#判断是否使用实例
+if(CK_EXAMPLE_DIS)
+    source "Kconfig.example"
+endif
+
+#引入的外部模块配置
+source "$(pro_top_path)/package/Kconfig"
+source "$(pro_top_path)/driver/Kconfig"
