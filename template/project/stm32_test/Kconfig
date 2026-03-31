@@ -22,7 +22,7 @@ config PRO_TOP_PATH
     default "$(pro_top_path)"
 
 # 引入工具链管理
-source "$(ck_tools_path)/ck_tools/Kconfig.toolchain"
+# source "$(ck_tools_path)/ck_tools/Kconfig.toolchain"
 
 #####################################################
 #                   用户配置，按需修改
@@ -32,17 +32,7 @@ menu "project config"
 	config PRO_NAME
         string "project name"
         default "ck_project" 
-
-    # 正式工程删除此选项
-    config CK_EXAMPLE_DIS
-        bool "display Kconfig example"
-        default n
 endmenu
-
-#判断是否使用实例
-if(CK_EXAMPLE_DIS)
-    source "Kconfig.example"
-endif
 
 #引入的外部模块配置
 source "$(pro_top_path)/package/Kconfig"

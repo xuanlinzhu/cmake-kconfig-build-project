@@ -1,7 +1,7 @@
 # ck_tool.py
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
-# Version: 2.0.0
+# Version: 2.1.0
 # Description: Unified GUI and CLI tool for building with CMake and Kconfig, supporting Windows/Linux
 
 import os
@@ -16,9 +16,49 @@ from tkinter import scrolledtext
 ck_tools_path = "../../.."
 
 # Python path
-py_path = sys.executable  
+py_path = sys.executable
+
+
 def is_windows():
     return os.name == "nt"
+
+
+def find_command(cmd):
+    return shutil.which(cmd)
+
+
+def get_cmake_generator():
+    return "Ninja"
+
+
+def get_build_command():
+    return ["ninja", "-C", "build", "-j4"]
+
+
+def get_clean_command():
+    return ["ninja", "-C", "build", "clean"]
+
+
+def check_build_environment(logger=print):
+    ok = True
+
+    if not find_command("cmake"):
+        logger("Error: cmake not found in PATH")
+        ok = False
+
+    if not find_command("ninja"):
+        logger("Error: ninja not found in PATH")
+        ok = False
+
+    # 交叉编译器检查：只做提示，不强制阻断，避免和 toolchain 文件冲突
+    gcc = find_command("arm-none-eabi-gcc")
+    if gcc:
+        logger(f"Found ARM GCC: {gcc}")
+    else:
+        logger("Warning: arm-none-eabi-gcc not found in PATH. If toolchain is configured by absolute path, this can be ignored.")
+
+    return ok
+
 
 def run_subprocess(cmd_list, cwd=None, capture_output=True):
     try:
@@ -32,9 +72,13 @@ def run_subprocess(cmd_list, cwd=None, capture_output=True):
         )
         if capture_output:
             for line in process.stdout:
-                yield line.strip()
+                yield line.rstrip()
+        ret = process.wait()
+        if ret != 0:
+            yield f"Command failed with exit code {ret}: {' '.join(cmd_list)}"
     except Exception as e:
         yield f"Error: {e}"
+
 
 class CKTool:
     def __init__(self, logger=print):
@@ -72,7 +116,6 @@ class CKTool:
         if param in ["auto", "a"]:
             self.build(param)
 
-
     def guiconfig(self, param=None):
         self.logger("Executing config operation...")
 
@@ -90,7 +133,6 @@ class CKTool:
                         powershell_full_command = f'& {{ {powershell_command}; exit }}'
                         self.logger(f"Trying Windows fallback command: {powershell_full_command}")
 
-                        # 用 cmd /c start /wait 打开新窗口并阻塞，等待关闭
                         subprocess.run([
                             'cmd', '/c', 'start', '/wait', 'powershell',
                             '-NoExit', '-Command', powershell_full_command
@@ -106,7 +148,6 @@ class CKTool:
                 for cmd in fallback_cmds:
                     try:
                         self.logger(f"Trying Linux fallback command: {term_prog} -e {' '.join(cmd)}")
-                        # 确保cmd是列表，这里不用split，用cmd本身是列表
                         subprocess.run([term_prog, "-e", *cmd], check=True)
                         break
                     except Exception as e:
@@ -118,7 +159,6 @@ class CKTool:
             self.logger(f"Error executing menuconfig: {e}")
             sys.exit(1)
 
-        # 这里是menuconfig执行完毕后才会继续执行
         self.logger("Executing ck_pylib.py ...")
         try:
             subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_pylib.py")], check=True)
@@ -128,17 +168,32 @@ class CKTool:
         if param in ["auto", "a"]:
             self.build(param)
 
-
-    def build(self, param=None):
+    def build(self, param=None, build_type="Debug"):
         self.logger("Executing build operation...")
+
+        if not check_build_environment(self.logger):
+            self.logger("Build environment check failed.")
+            return
+
         try:
             if os.path.exists("build"):
                 self.logger("Deleting existing build directory...")
                 shutil.rmtree("build")
 
-            os.makedirs("build")
-            generator = "MinGW Makefiles" if is_windows() else "Unix Makefiles"
-            for line in run_subprocess(["cmake", "-G", generator, ".."], cwd="build"):
+            os.makedirs("build", exist_ok=True)
+
+            generator = get_cmake_generator()
+            cmake_cmd = [
+            "cmake",
+            "-S", ".",
+            "-B", "build",
+            "-G", "Ninja",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake",
+            ]
+
+            self.logger(f"Running: {' '.join(cmake_cmd)}")
+            for line in run_subprocess(cmake_cmd):
                 self.logger(line)
         except Exception as e:
             self.logger(f"Error executing build: {e}")
@@ -147,25 +202,27 @@ class CKTool:
             self.make()
 
     def make(self):
-
-        # refresh ck_version.h
         self.logger("Executing ck_version.py ...")
         try:
             subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_version.py")], check=True)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing ck_version.py: {e}")
 
-        self.logger("Executing make operation...")
+        self.logger("Executing ninja build operation...")
         try:
-            for line in run_subprocess(["make", "-j4"], cwd="build"):
+            build_cmd = get_build_command()
+            self.logger(f"Running: {' '.join(build_cmd)}")
+            for line in run_subprocess(build_cmd):
                 self.logger(line)
         except Exception as e:
-            self.logger(f"Error executing make: {e}")
+            self.logger(f"Error executing ninja build: {e}")
 
     def clean(self):
         self.logger("Executing clean operation...")
         try:
-            for line in run_subprocess(["make", "clean"], cwd="build"):
+            clean_cmd = get_clean_command()
+            self.logger(f"Running: {' '.join(clean_cmd)}")
+            for line in run_subprocess(clean_cmd):
                 self.logger(line)
         except Exception as e:
             self.logger(f"Error executing clean: {e}")
@@ -178,13 +235,14 @@ class CKTool:
         try:
             if is_windows():
                 dst = "C:\\tftpboot\\"
-                subprocess.run(["copy", src, dst], shell=True)
+                subprocess.run(["cmd", "/c", "copy", src, dst], check=True)
             else:
-                dst = "/home/xxx/tftpboot/"  # 修改为实际路径
+                dst = "/home/xxx/tftpboot/"
                 subprocess.run(["cp", src, dst], check=True)
             self.logger(f"Copied {src} to {dst}")
         except Exception as e:
             self.logger(f"Copy failed: {e}")
+
 
 class CKGui:
     def __init__(self, root):
@@ -192,9 +250,9 @@ class CKGui:
         self.root = root
         self.root.title("CK-TOOL")
         self.root.geometry(f"720x480+{(self.root.winfo_screenwidth() - 720)//2}+{(self.root.winfo_screenheight()-480)//2}")
-        self.output_text = scrolledtext.ScrolledText(root,wrap=tk.WORD,height=20,width= 80,font=("Microsoft Yahei",10,"bold"))
-        self.output_text.pack(padx = 10,pady=10,fill=tk.BOTH,expand=True)
-        self.output_text.config(state=tk.DISABLED,bg="#d7f3e3")
+        self.output_text = scrolledtext.ScrolledText(root, wrap=tk.WORD, height=20, width=80, font=("Microsoft Yahei", 10, "bold"))
+        self.output_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        self.output_text.config(state=tk.DISABLED, bg="#d7f3e3")
         self.button_frame = tk.Frame(root)
         self.button_frame.pack(pady=15)
         self.add_buttons()
@@ -206,8 +264,6 @@ class CKGui:
             "构 建": lambda: self.run(self.tool.build),
             "编 译": lambda: self.run(self.tool.make),
             "清 除": lambda: self.run(self.tool.clean),
-            # 目前自动会出现问题，导致配置还没结束就直接进行编译
-            # "自 动": lambda: self.run(lambda: self.tool.guiconfig("auto")), 
         }
         for name, func in btns.items():
             tk.Button(self.button_frame, text=name, command=func, padx=20, pady=6, bg="#d7f3e3",
@@ -228,6 +284,7 @@ class CKGui:
         script_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(script_dir)
         self.print_info(f"Changed working directory to {script_dir}")
+
 
 def cli_main():
     tool = CKTool()
@@ -251,6 +308,7 @@ def cli_main():
     else:
         print(f"Invalid command: {cmd}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

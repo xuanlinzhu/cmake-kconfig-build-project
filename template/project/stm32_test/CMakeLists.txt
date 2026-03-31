@@ -1,68 +1,127 @@
 cmake_minimum_required(VERSION 3.22)
 
-#
-# This file is generated only once,
-# and is not re-generated if converter is called multiple times.
-#
-# User is free to modify the file as much as necessary
-#
+# 引入kconfig配置
+include(ck_config.cmake)
+# 引入cmakelib
+include(${CK_TOOLS_PATH}/ck_tools/ck_cmlib.cmake)
 
-# Setup compiler settings
+# --------------------------------------------------
+# 基础设置
+# --------------------------------------------------
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
-
-# Define the build type
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
-# Set the project name
-set(CMAKE_PROJECT_NAME 111)
-
-# Enable compile command to ease indexing with e.g. clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
-# Core project settings
-project(${CMAKE_PROJECT_NAME})
-message("Build type: " ${CMAKE_BUILD_TYPE})
+# 工程名
+set(CMAKE_PROJECT_NAME ${PRO_NAME})
 
-# Enable CMake support for ASM and C languages
+project(${CMAKE_PROJECT_NAME})
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
 enable_language(C ASM)
 
-# Create an executable object type
+message("---------------开始构建----------------")
+print_paths()
+
+# --------------------------------------------------
+# 输出目录
+# --------------------------------------------------
+set(OUTPUT_DIR "${CMAKE_BINARY_DIR}/../bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${OUTPUT_DIR})
+
+# --------------------------------------------------
+# 创建主目标
+# --------------------------------------------------
 add_executable(${CMAKE_PROJECT_NAME})
 
-# Add STM32CubeMX generated sources
+# --------------------------------------------------
+# CubeMX 生成部分
+# --------------------------------------------------
 add_subdirectory(cmake/stm32cubemx)
 
-# Link directories setup
-target_link_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined library search paths
-)
+# 外部模块
+set_external_path("${PRO_TOP_PATH}/package" "package")
+set_external_path("${PRO_TOP_PATH}/driver" "driver")
 
-# Add sources to executable
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user sources here
-)
+# 遍历当前目录下一级模块，但排除 CubeMX 相关目录
+find_cmakelists_current_dir("build" "bin" "cmake" "Core" "Drivers")
 
-# Add include paths
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined include paths
-)
+print_all_code_sources(SRC_FILES)
+print_all_code_includes(INCLUDE_PATH)
+print_all_code_librarys(LIB_FILES)
 
-# Add project symbols (macros)
-target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE
-    # Add user defined symbols
-)
+# --------------------------------------------------
+# 把收集到的源码加入主目标
+# --------------------------------------------------
+if(DEFINED SRC_FILES AND NOT "${SRC_FILES}" STREQUAL "")
+    list(REMOVE_DUPLICATES SRC_FILES)
+    set_source_files_properties(${SRC_FILES} PROPERTIES LANGUAGE C)
+    target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${SRC_FILES})
+endif()
 
-# Remove wrong libob.a library dependency when using cpp files
+# --------------------------------------------------
+# 把收集到的头文件路径加入主目标
+# 不再用 INCLUDE_DIRECTORIES，全改为 target 级
+# --------------------------------------------------
+if(DEFINED INCLUDE_PATH AND NOT "${INCLUDE_PATH}" STREQUAL "")
+    list(REMOVE_DUPLICATES INCLUDE_PATH)
+    target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE ${INCLUDE_PATH})
+endif()
+
+# --------------------------------------------------
+# 清理错误依赖
+# --------------------------------------------------
 list(REMOVE_ITEM CMAKE_C_IMPLICIT_LINK_LIBRARIES ob)
 
-# Add linked libraries
+# --------------------------------------------------
+# 先链接 CubeMX，再链接你的库
+# --------------------------------------------------
 target_link_libraries(${CMAKE_PROJECT_NAME}
     stm32cubemx
-
-    # Add user defined libraries
 )
+
+if(DEFINED LIB_FILES AND NOT "${LIB_FILES}" STREQUAL "")
+    list(REMOVE_DUPLICATES LIB_FILES)
+    target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${LIB_FILES})
+endif()
+
+# --------------------------------------------------
+# 生成 bin / dis / map
+# 这里沿用你原来的逻辑
+# --------------------------------------------------
+add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+    COMMAND ${TC_C_CXX_COMPILER}-objcopy -O binary
+            $<TARGET_FILE:${CMAKE_PROJECT_NAME}>
+            ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.bin
+    COMMENT "Generating binary file: ${CMAKE_PROJECT_NAME}.bin"
+)
+
+
+
+if(CMAKE_HOST_SYSTEM_NAME STREQUAL "Windows")
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND cmd /c "${TC_C_CXX_COMPILER}-objdump -D $<TARGET_FILE:${CMAKE_PROJECT_NAME}> > ${OUTPUT_DIR}\\${CMAKE_PROJECT_NAME}.dis"
+        COMMENT "Generating disassembly file [win]: ${CMAKE_PROJECT_NAME}.dis"
+    )
+else()
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND /bin/sh -c "${TC_C_CXX_COMPILER}-objdump -D $<TARGET_FILE:${CMAKE_PROJECT_NAME}> > ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.dis"
+        COMMENT "Generating disassembly file [linux]: ${CMAKE_PROJECT_NAME}.dis"
+    )
+endif()
+
+
+
+# message(STATUS "Map file will be generated at: ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.map")
+# target_link_options(${CMAKE_PROJECT_NAME} PRIVATE
+#     "-Wl,-Map=${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.map"
+#     "-Wl,-cref"
+# )
