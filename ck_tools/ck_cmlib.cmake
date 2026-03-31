@@ -21,7 +21,7 @@ set_property( GLOBAL APPEND PROPERTY ALL_CODE_LIBRARIES)
 
 # 定义一个函数，用于输出当前源路径和当前构建路径
 function(print_paths)
-    message(STATUS "Src Path: ${CMAKE_CURRENT_SOURCE_DIR}，Build Path: ${CMAKE_CURRENT_BINARY_DIR}")
+    message(STATUS "Src Path: ${CMAKE_CURRENT_SOURCE_DIR},Build Path: ${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 #------------------辅助函数: 归一化路径------------------#

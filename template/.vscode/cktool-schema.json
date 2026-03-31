@@ -5,7 +5,7 @@
       "type": "string", 
       "description": "项目文件夹名字",
       "enum": ["test"],
-      "default": "test"
+      "default": "test" "stm32_test"
     },
     "CKTool.AppName": { 
       "type": "string", 

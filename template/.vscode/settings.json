@@ -7,7 +7,7 @@
     }
   ],
   // 项目文件夹名字
-  "CKTool.PrjDirName": "test",
+  "CKTool.PrjDirName": "stm32_test",
   // 应用程序名字
   "CKTool.AppName": "ck_project", 
 
