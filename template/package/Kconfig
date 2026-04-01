@@ -2,4 +2,6 @@ menu "package config"
 
 source "$(pro_top_path)/package/pack_temp/Kconfig"
 source "$(pro_top_path)/package/unity/Kconfig"
+source "$(pro_top_path)/package/sum_mod/Kconfig"
+
 endmenu

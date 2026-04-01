@@ -58,7 +58,9 @@ static void MPU_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+#include "my_sum.h"
 
+int ret = 0 ,a = 1,b=2;
 /* USER CODE END 0 */
 
 /**
@@ -97,7 +99,7 @@ int main(void)
   MX_SPI4_Init();
   MX_QUADSPI_Init();
   /* USER CODE BEGIN 2 */
-
+  ret = my_sum_func(a,b);
   /* USER CODE END 2 */
 
   /* Infinite loop */

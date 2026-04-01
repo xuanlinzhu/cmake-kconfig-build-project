@@ -128,7 +128,7 @@
       
     },
     {
-      "name": "STM32H7 Debug",
+      "name": "OpenOCD Debug",
       "type": "cortex-debug",
       "request": "launch",
       "servertype": "openocd",
