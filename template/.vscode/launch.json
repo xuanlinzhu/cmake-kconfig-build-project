@@ -135,8 +135,8 @@
       "cwd": "${workspaceFolder}/project/${config:CKTool.PrjDirName}",
       "executable": "${workspaceFolder}/project/${config:CKTool.PrjDirName}/bin/${config:CKTool.AppName}.elf",
       "configFiles": [
-        "interface/cmsis-dap.cfg",
-        "target/stm32h7x.cfg"
+        "interface/${config:CKTool.DownTool}.cfg",
+        "target/${config:CKTool.MCUSeries}.cfg"
       ],
       "interface": "swd",
       "runToEntryPoint": "main"

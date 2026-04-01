@@ -11,6 +11,11 @@
   // 应用程序名字
   "CKTool.AppName": "stm32_demo", 
 
+  // 下载器
+  "CKTool.DownTool": "cmsis-dap", 
+  // MCU芯片系列
+  "CKTool.MCUSeries": "stm32h7x",
+
   // 测试文件夹名字
   "CKTool.TestDirName": "template",
   // 测试程序名字
@@ -29,5 +34,4 @@
   // GDB 服务器 IP 端口
   "CKTool.GdbServerIP": "192.168.2.201",
   "CKTool.GdbServerPort": "1234",
-  "cmake.sourceDirectory": "E:/01_Linux_Share/02_Code/dqgx_app/driver/tcp_server",
 }

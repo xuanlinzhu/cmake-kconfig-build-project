@@ -33,8 +33,8 @@
         "command": "openocd.exe"
       },
       "args": [
-        "-f", "interface/cmsis-dap.cfg",
-        "-f", "target/stm32h7x.cfg",
+        "-f", "interface/${config:CKTool.DownTool}.cfg",
+        "-f", "target/${config:CKTool.MCUSeries}.cfg",
         "-c", "program bin/${config:CKTool.AppName}.elf verify reset exit"
       ],
       "options": {
