@@ -24,6 +24,32 @@
         "clear": true
       },
       "problemMatcher": []
+    },
+    {
+      "label": "OpenOCD Download",
+      "type": "shell",
+      "command": "openocd",
+      "windows": {
+        "command": "openocd.exe"
+      },
+      "args": [
+        "-f", "interface/cmsis-dap.cfg",
+        "-f", "target/stm32h7x.cfg",
+        "-c", "program bin/${config:CKTool.AppName}.elf verify reset exit"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/project/${config:CKTool.PrjDirName}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
+      "problemMatcher": []
     }
   ],
   "inputs": [

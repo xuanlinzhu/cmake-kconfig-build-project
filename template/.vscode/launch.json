@@ -97,6 +97,37 @@
       }
     },
     {
+      "name": "OpenOCD Download",
+      "type": "cppdbg",
+      "request": "launch",
+
+      // 默认linux
+      "program": "/bin/echo",
+      "miDebuggerPath": "${config:CKTool.GdbLinux}",
+      "args": ["OpenOCD Download done"],
+      "windows": {
+        "program": "C:/Windows/System32/cmd.exe",
+        "miDebuggerPath": "${config:CKTool.GdbWin}" ,
+        "args": ["/c", "echo OpenOCD Download done"],
+      },
+
+      "cwd": "${workspaceFolder}/project/${config:CKTool.PrjDirName}",
+
+      "preLaunchTask": "OpenOCD Download",
+
+      // 不要配置，配置了就直接进入Debug模式
+      // "stopAtEntry": true,
+      // 不需要额外窗口
+      // "externalConsole": true,
+      "MIMode": "gdb",
+
+      "setupCommands": [
+        { "description": "Enable pretty printing", "text": "-enable-pretty-printing" }
+      ],
+      // "logging": { "engineLogging": true, "trace": true, "traceResponse": true }
+      
+    },
+    {
       "name": "STM32H7 Debug",
       "type": "cortex-debug",
       "request": "launch",
