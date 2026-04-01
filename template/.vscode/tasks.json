@@ -14,6 +14,15 @@
       "options": {
         "cwd": "${workspaceFolder}/project/${config:CKTool.PrjDirName}"
       },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true
+      },
       "problemMatcher": []
     }
   ],
