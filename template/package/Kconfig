@@ -1,5 +1,6 @@
 menu "package config"
 
+source "$(CK_WORKSPACE_ROOT)/package/drv_temp/Kconfig"
 source "$(CK_WORKSPACE_ROOT)/package/pack_temp/Kconfig"
 source "$(CK_WORKSPACE_ROOT)/package/unity/Kconfig"
 source "$(CK_WORKSPACE_ROOT)/package/sum_mod/Kconfig"

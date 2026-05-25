@@ -4,15 +4,7 @@
 # Version: 2.0.0
 
 #####################################################
-#                   标准配置，不要修改
-#####################################################
-# Author: zhuxuanlin
-# Email: xuanlinzhu@qq.com
-# Date: 2025-6-28
-# Version: 2.0.0
-
-#####################################################
-#                   标准配置，不要修改
+#                   CK-TOOLS工具配置
 #####################################################
 mainmenu "CK TOOLS CONFIG"
 
@@ -22,7 +14,7 @@ CK_TOOLS_ROOT = ../../..
 # 配置工作区路径
 CK_WORKSPACE_ROOT = ../..
 # python ck_tools的构建命令
-CK_CMD_CONFIGURE = cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake
+CK_CMD_CONFIGURE = cmake -S . -B build -G Ninja
 # python ck_tools的编译命令
 CK_CMD_BUILD = cmake --build build -j4
 # python ck_tools的清理命令
@@ -57,17 +49,21 @@ source "$(CK_TOOLS_ROOT)/ck_tools/Kconfig.toolchain"
 #                   用户配置，按需修改
 #####################################################
 menu "project config"
-    # 决定生成文件的名字
-    config PRO_NAME
-        string "project name"
-        default "ck_project"
+# 决定生成文件的名字
+config PRO_NAME
+    string "project name"
+    default "ck_project" 
 
-    # 版本开关
-    config CK_VERSION_ENABLE
-        bool "enable ck-version function"
-        default n
+# 自动版本信息
+config CK_VERSION_ENABLE
+    bool "enable ck-version function"
+    default n
+
+# 是否为测试工程
+config CK_TEST_UNIT
+    bool "Unit test"
+    default n
 endmenu
 
-#引入的外部模块配置
+# 引入的外部模块配置
 source "$(CK_WORKSPACE_ROOT)/package/Kconfig"
-source "$(CK_WORKSPACE_ROOT)/driver/Kconfig"

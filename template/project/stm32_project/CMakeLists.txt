@@ -55,7 +55,6 @@ find_current_header_dir()
 
 # 外部模块
 set_external_path("${CK_WORKSPACE_ROOT}/package" "package")
-set_external_path("${CK_WORKSPACE_ROOT}/driver" "driver")
 
 # 遍历当前目录下一级模块，但排除 CubeMX 相关目录
 find_cmakelists_current_dir("build" "bin" "cmake" "Core" "Drivers")

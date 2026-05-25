@@ -36,7 +36,6 @@ find_current_header_dir()
 
 # 配置外部工程路径
 set_external_path("${CK_WORKSPACE_ROOT}/package" "package")
-set_external_path("${CK_WORKSPACE_ROOT}/driver" "driver")
 
 ############################标准设置，不修改###################################
 
@@ -125,4 +124,10 @@ endif()
 # 链接库
 if(DEFINED LIB_FILES AND NOT "${LIB_FILES}" STREQUAL "")
     target_link_libraries(${PRO_NAME} ${LIB_FILES})
+endif()
+
+# 添加测试
+if(DEFINED CK_TEST_UNIT)
+    enable_testing()
+    add_test(NAME ${PRO_NAME}_unit COMMAND $<TARGET_FILE:${PRO_NAME}>)
 endif()
