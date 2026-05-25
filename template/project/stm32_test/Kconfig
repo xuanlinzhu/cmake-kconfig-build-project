@@ -22,7 +22,7 @@ CK_TOOLS_ROOT = ../../..
 # 配置工作区路径
 CK_WORKSPACE_ROOT = ../..
 # python ck_tools的构建命令
-CK_CMD_CONFIGURE = cmake -S . -B build -G Ninja -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake
+CK_CMD_CONFIGURE = cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_TOOLCHAIN_FILE=cmake/gcc-arm-none-eabi.cmake
 # python ck_tools的编译命令
 CK_CMD_BUILD = cmake --build build -j4
 # python ck_tools的清理命令
