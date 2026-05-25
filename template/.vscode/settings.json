@@ -7,9 +7,9 @@
     }
   ],
   // 项目文件夹名字
-  "CKTool.PrjDirName": "stm32_test",
+  "CKTool.PrjDirName": "test",
   // 应用程序名字
-  "CKTool.AppName": "stm32_demo", 
+  "CKTool.AppName": "ck_project", 
 
   // 下载器
   "CKTool.DownTool": "cmsis-dap", 

@@ -7,16 +7,60 @@
 import os
 import sys
 import shutil
+import shlex
 import subprocess
 import threading
 import tkinter as tk
 from tkinter import scrolledtext
 
-# ck_tools path
-ck_tools_path = "../../.."
+# Kconfig globals
+CK_TOOLS_ROOT = ""
+CK_WORKSPACE_ROOT = ""
+CK_CMD_CONFIGURE = ""
+CK_CMD_BUILD = ""
+CK_CMD_CLEAN = ""
 
 # Python path
-py_path = sys.executable  
+py_path = sys.executable
+
+
+def _load_kconfig_globals():
+    global CK_TOOLS_ROOT, CK_WORKSPACE_ROOT, CK_CMD_CONFIGURE, CK_CMD_BUILD, CK_CMD_CLEAN
+
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    kconfig_path = os.path.join(script_dir, "Kconfig")
+    os.environ.setdefault("srctree", script_dir)
+    os.environ.setdefault("KCONFIG_CONFIG", os.path.join(script_dir, ".config"))
+
+    try:
+        import kconfiglib
+    except ImportError as exc:
+        raise RuntimeError("kconfiglib is required to load template/project/test/Kconfig") from exc
+
+    kconf = kconfiglib.Kconfig(kconfig_path)
+
+    def get_symbol_value(name):
+        sym = kconf.syms.get(name)
+        if sym is None:
+            raise KeyError(f"Kconfig symbol not found: {name}")
+        return sym.str_value
+
+    CK_TOOLS_ROOT = get_symbol_value("CK_TOOLS_ROOT")
+    CK_WORKSPACE_ROOT = get_symbol_value("CK_WORKSPACE_ROOT")
+    CK_CMD_CONFIGURE = get_symbol_value("CK_CMD_CONFIGURE")
+    CK_CMD_BUILD = get_symbol_value("CK_CMD_BUILD")
+    CK_CMD_CLEAN = get_symbol_value("CK_CMD_CLEAN")
+
+
+def _split_command(cmd_text, fallback_cmd):
+    if cmd_text:
+        return shlex.split(cmd_text)
+    return fallback_cmd
+
+
+_load_kconfig_globals()
+
+
 def is_windows():
     return os.name == "nt"
 
@@ -43,7 +87,7 @@ class CKTool:
     def config(self, param=None):
         self.logger("Executing config operation...")
 
-        menuconfig_fullpath = os.path.join(ck_tools_path, "ck_tools/menuconfig.py")
+        menuconfig_fullpath = os.path.join(CK_TOOLS_ROOT, "ck_tools", "menuconfig.py")
         fallback_cmds = [
             [py_path, menuconfig_fullpath, "Kconfig"],
             ["menuconfig"],
@@ -65,7 +109,7 @@ class CKTool:
 
         self.logger("Executing ck_pylib.py ...")
         try:
-            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_pylib.py")], check=True)
+            subprocess.run([py_path, os.path.join(CK_TOOLS_ROOT, "ck_tools", "ck_pylib.py")], check=True)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing ck_pylib.py: {e}")
 
@@ -76,7 +120,7 @@ class CKTool:
     def guiconfig(self, param=None):
         self.logger("Executing config operation...")
 
-        menuconfig_fullpath = os.path.join(ck_tools_path, "tools/script/menuconfig.py")
+        menuconfig_fullpath = os.path.join(CK_TOOLS_ROOT, "ck_tools", "menuconfig.py")
         fallback_cmds = [
             [py_path, menuconfig_fullpath, "Kconfig"],
             ["menuconfig"],
@@ -121,7 +165,7 @@ class CKTool:
         # 这里是menuconfig执行完毕后才会继续执行
         self.logger("Executing ck_pylib.py ...")
         try:
-            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_pylib.py")], check=True)
+            subprocess.run([py_path, os.path.join(CK_TOOLS_ROOT, "ck_tools", "ck_pylib.py")], check=True)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing ck_pylib.py: {e}")
 
@@ -136,9 +180,10 @@ class CKTool:
                 self.logger("Deleting existing build directory...")
                 shutil.rmtree("build")
 
-            os.makedirs("build")
-            generator = "MinGW Makefiles" if is_windows() else "Unix Makefiles"
-            for line in run_subprocess(["cmake", "-G", generator, ".."], cwd="build"):
+            os.makedirs("build", exist_ok=True)
+            build_cmd = _split_command(CK_CMD_CONFIGURE, ["cmake", "-S", ".", "-B", "build", "-G", "Ninja"])
+            self.logger(f"Running: {' '.join(build_cmd)}")
+            for line in run_subprocess(build_cmd):
                 self.logger(line)
         except Exception as e:
             self.logger(f"Error executing build: {e}")
@@ -151,13 +196,15 @@ class CKTool:
         # refresh ck_version.h
         self.logger("Executing ck_version.py ...")
         try:
-            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_version.py")], check=True)
+            subprocess.run([py_path, os.path.join(CK_TOOLS_ROOT, "ck_tools", "ck_version.py")], check=True)
         except subprocess.CalledProcessError as e:
             self.logger(f"Error executing ck_version.py: {e}")
 
         self.logger("Executing make operation...")
         try:
-            for line in run_subprocess(["make", "-j4"], cwd="build"):
+            make_cmd = _split_command(CK_CMD_BUILD, ["cmake", "--build", "build", "-j4"])
+            self.logger(f"Running: {' '.join(make_cmd)}")
+            for line in run_subprocess(make_cmd):
                 self.logger(line)
         except Exception as e:
             self.logger(f"Error executing make: {e}")
@@ -165,7 +212,9 @@ class CKTool:
     def clean(self):
         self.logger("Executing clean operation...")
         try:
-            for line in run_subprocess(["make", "clean"], cwd="build"):
+            clean_cmd = _split_command(CK_CMD_CLEAN, ["cmake", "--build", "build", "--target", "clean"])
+            self.logger(f"Running: {' '.join(clean_cmd)}")
+            for line in run_subprocess(clean_cmd):
                 self.logger(line)
         except Exception as e:
             self.logger(f"Error executing clean: {e}")

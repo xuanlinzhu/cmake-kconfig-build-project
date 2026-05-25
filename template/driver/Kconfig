@@ -1,5 +1,5 @@
 menu "driver config"
 
-source "$(pro_top_path)/driver/drv_temp/Kconfig"
+source "$(CK_WORKSPACE_ROOT)/driver/drv_temp/Kconfig"
 
 endmenu

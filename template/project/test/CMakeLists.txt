@@ -9,9 +9,9 @@ cmake_minimum_required(VERSION 3.10)
 # 引入kconfig配置
 include(ck_config.cmake)
 # 引入cmakelib
-include(${CK_TOOLS_PATH}/ck_tools/ck_cmlib.cmake)
+include(${CK_TOOLS_ROOT}/ck_tools/ck_cmlib.cmake)
 # 引入工具链配置
-include(${CK_TOOLS_PATH}/ck_tools/ck_toolchain.cmake)
+include(${CK_TOOLS_ROOT}/ck_tools/ck_toolchain.cmake)
 
 # 工程名字
 project(${PRO_NAME})
@@ -35,8 +35,8 @@ find_current_source_file()
 find_current_header_dir()
 
 # 配置外部工程路径
-set_external_path("${PRO_TOP_PATH}/package" "package")
-set_external_path("${PRO_TOP_PATH}/driver" "driver")
+set_external_path("${CK_WORKSPACE_ROOT}/package" "package")
+set_external_path("${CK_WORKSPACE_ROOT}/driver" "driver")
 
 ############################标准设置，不修改###################################
 

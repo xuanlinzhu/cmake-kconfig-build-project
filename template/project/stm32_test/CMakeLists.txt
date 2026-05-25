@@ -55,8 +55,8 @@ add_subdirectory(cmake/stm32cubemx)
 find_current_header_dir()
 
 # 外部模块
-set_external_path("${PRO_TOP_PATH}/package" "package")
-set_external_path("${PRO_TOP_PATH}/driver" "driver")
+set_external_path("${CK_WORKSPACE_ROOT}/package" "package")
+set_external_path("${CK_WORKSPACE_ROOT}/driver" "driver")
 
 # 遍历当前目录下一级模块，但排除 CubeMX 相关目录
 find_cmakelists_current_dir("build" "bin" "cmake" "Core" "Drivers")
