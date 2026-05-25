@@ -4,3 +4,5 @@ build
 */bin/
 */Testing
 __pycache__
+ck_config.h
+ck_config.cmake
