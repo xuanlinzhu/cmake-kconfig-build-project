@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 # 引入 kconfig 配置
 include(ck_config.cmake)
 # 引入 cmakelib
-include(${CK_TOOLS_PATH}/ck_tools/ck_cmlib.cmake)
+include(${CK_TOOLS_ROOT}/ck_tools/ck_cmlib.cmake)
 
 # --------------------------------------------------
 # 基础设置
@@ -20,7 +20,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 工程名
 set(CMAKE_PROJECT_NAME ${PRO_NAME})
-
 project(${CMAKE_PROJECT_NAME} C ASM)
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
@@ -125,7 +124,6 @@ set(ELF_FILE  $<TARGET_FILE:${CMAKE_PROJECT_NAME}>)
 set(BIN_FILE  ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.bin)
 set(DIS_FILE  ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.dis)
 
-
 # size 输出到文本文件，方便查看
 set(SIZE_FILE ${OUTPUT_DIR}/${CMAKE_PROJECT_NAME}.size.txt)
 
@@ -150,7 +148,6 @@ if(CMAKE_OBJCOPY)
         COMMENT "Generate ${CMAKE_PROJECT_NAME}.bin"
         VERBATIM
     )
-
     add_custom_target(${CMAKE_PROJECT_NAME}_bin ALL DEPENDS ${BIN_FILE})
 endif()
 
@@ -199,5 +196,3 @@ if(CMAKE_SIZE)
 
     add_custom_target(${CMAKE_PROJECT_NAME}_size ALL DEPENDS ${SIZE_FILE})
 endif()
-
-

@@ -9,14 +9,14 @@ cmake_minimum_required(VERSION 3.10)
 # 引入kconfig配置
 include(ck_config.cmake)
 # 引入cmakelib
-include(${CK_TOOLS_PATH}/ck_tools/ck_cmlib.cmake)
+include(${CK_TOOLS_ROOT}/ck_tools/ck_cmlib.cmake)
 # 引入工具链配置
-include(${CK_TOOLS_PATH}/ck_tools/ck_toolchain.cmake)
+include(${CK_TOOLS_ROOT}/ck_tools/ck_toolchain.cmake)
 
 # 工程名字
 project(${PRO_NAME})
 
-message("---------------开始构建----------------")
+message("---------------start build---------------")
 print_paths()
 
 # 设置输出路径
@@ -35,9 +35,8 @@ find_current_source_file()
 find_current_header_dir()
 
 # 配置外部工程路径
-set_external_path("${PRO_TOP_PATH}/package" "package")
-set_external_path("${PRO_TOP_PATH}/driver" "driver")
-
+set_external_path("${CK_WORKSPACE_ROOT}/package" "package")
+set_external_path("${CK_WORKSPACE_ROOT}/driver" "driver")
 
 ############################标准设置，不修改###################################
 
@@ -53,7 +52,6 @@ if(DEFINED TC_LIBRARY_DIRS AND NOT TC_LIBRARY_DIRS STREQUAL "")
     endforeach()
 
     link_directories(${_resolved_lib_dirs})
-
     message(STATUS "Added library paths (resolved): ${_resolved_lib_dirs}")
 endif()
 
@@ -74,29 +72,23 @@ add_executable(${PRO_NAME} ${SRC_FILES})
 if(DEFINED TC_DEFINE_MACROS AND NOT TC_DEFINE_MACROS STREQUAL "")
     # 将空格分隔的宏列表转换成 CMake 列表
     string(REPLACE " " ";" TC_DEFINE_MACROS_LIST "${TC_DEFINE_MACROS}")
-
     target_compile_definitions(${PRO_NAME} PUBLIC ${TC_DEFINE_MACROS_LIST})
-
     message(STATUS "Added macro definitions: ${TC_DEFINE_MACROS}")
 endif()
 
 # 添加链接库
 if(DEFINED TC_LINK_LIBRARIES AND NOT TC_LINK_LIBRARIES STREQUAL "")
-    # 把空格分隔的字符串转换成CMake列表
     string(REPLACE " " ";" TC_LINK_LIBRARIES_LIST "${TC_LINK_LIBRARIES}")
-
-    # 这里举例添加为编译选项（你也可以换成链接选项或其他）
     target_link_libraries(${PRO_NAME} PRIVATE ${TC_LINK_LIBRARIES_LIST})
-
     message(STATUS "Added link libraries options: ${TC_LINK_LIBRARIES}")
 endif()
 
 # bin 文件生成
 if(DEFINED TC_GENERATE_BIN)
-        add_custom_command(TARGET ${PRO_NAME} POST_BUILD
+    add_custom_command(TARGET ${PRO_NAME} POST_BUILD
         COMMAND ${TC_C_CXX_COMPILER}-objcopy -O binary $<TARGET_FILE:${PRO_NAME}> ${OUTPUT_DIR}/${PRO_NAME}.bin
         COMMENT "Generating binary file: ${PRO_NAME}.bin"
-        )
+    )
 endif()
 
 # 反汇编文件生成
@@ -136,4 +128,3 @@ if(DEFINED PRO_TEST_INTEGRATION OR DEFINED PRO_TEST_UNIT)
         add_test(NAME ${PRO_NAME}_integration COMMAND $<TARGET_FILE:${PRO_NAME}>)
     endif()
 endif()
-
