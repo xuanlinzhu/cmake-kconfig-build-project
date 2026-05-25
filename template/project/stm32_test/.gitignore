@@ -7,3 +7,4 @@ build/
 .config.old
 ck_config.cmake
 ck_config.h
+__pycache__

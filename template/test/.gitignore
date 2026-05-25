@@ -3,3 +3,4 @@ build
 */.config.old
 */bin/
 */Testing
+__pycache__

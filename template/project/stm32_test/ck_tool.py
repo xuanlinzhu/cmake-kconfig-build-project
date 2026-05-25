@@ -108,11 +108,11 @@ class CKTool:
             self.logger("All attempts to run menuconfig failed.")
             sys.exit(1)
 
-        self.logger("Executing ck_pylib.py ...")
+        self.logger("Executing ck_config_gen.py ...")
         try:
-            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_pylib.py")], check=True)
+            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_config_gen.py")], check=True)
         except subprocess.CalledProcessError as e:
-            self.logger(f"Error executing ck_pylib.py: {e}")
+            self.logger(f"Error executing ck_config_gen.py: {e}")
 
         if param in ["auto", "a"]:
             self.build(param)
@@ -160,11 +160,11 @@ class CKTool:
             self.logger(f"Error executing menuconfig: {e}")
             sys.exit(1)
 
-        self.logger("Executing ck_pylib.py ...")
+        self.logger("Executing ck_config_gen.py ...")
         try:
-            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_pylib.py")], check=True)
+            subprocess.run([py_path, os.path.join(ck_tools_path, "ck_tools/ck_config_gen.py")], check=True)
         except subprocess.CalledProcessError as e:
-            self.logger(f"Error executing ck_pylib.py: {e}")
+            self.logger(f"Error executing ck_config_gen.py: {e}")
 
         if param in ["auto", "a"]:
             self.build(param)

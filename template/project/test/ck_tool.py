@@ -135,9 +135,9 @@ class CKTool:
             sys.exit(1)
 
         try:
-            _run_python_script("ck_pylib.py", logger=self.logger)
+            _run_python_script("ck_config_gen.py", logger=self.logger)
         except subprocess.CalledProcessError as e:
-            self.logger(f"Error executing ck_pylib.py: {e}")
+            self.logger(f"Error executing ck_config_gen.py: {e}")
             sys.exit(1)
 
         if param in ["auto", "a"]:
