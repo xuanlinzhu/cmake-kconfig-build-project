@@ -22,13 +22,14 @@ CK_WORKSPACE_ROOT = ""
 CK_CMD_CONFIGURE = ""
 CK_CMD_BUILD = ""
 CK_CMD_CLEAN = ""
+CK_VERSION_ENABLE = ""
 
 # Python path
 PY_PATH = sys.executable
 
 
 def _load_kconfig_globals():
-    global CK_TOOLS_ROOT, CK_WORKSPACE_ROOT, CK_CMD_CONFIGURE, CK_CMD_BUILD, CK_CMD_CLEAN
+    global CK_TOOLS_ROOT, CK_WORKSPACE_ROOT, CK_CMD_CONFIGURE, CK_CMD_BUILD, CK_CMD_CLEAN, CK_VERSION_ENABLE
 
     os.environ.setdefault("srctree", str(SCRIPT_DIR))
     os.environ.setdefault("KCONFIG_CONFIG", str(CONFIG_PATH))
@@ -39,13 +40,19 @@ def _load_kconfig_globals():
         raise RuntimeError("kconfiglib is required to load template/project/test/Kconfig") from exc
 
     kconf = kconfiglib.Kconfig(str(KCONFIG_PATH))
+    if CONFIG_PATH.exists():
+        kconf.load_config(str(CONFIG_PATH))
 
-    def get_symbol_value(name):
+    def get_symbol_value(name, default=None):
         sym = kconf.syms.get(name)
         if sym is None:
+            if default is not None:
+                return default
             raise KeyError(f"Kconfig symbol not found: {name}")
         value = sym.str_value
         if value is None:
+            if default is not None:
+                return default
             raise ValueError(f"Kconfig symbol has no value: {name}")
         return value
 
@@ -54,6 +61,7 @@ def _load_kconfig_globals():
     CK_CMD_CONFIGURE = get_symbol_value("CK_CMD_CONFIGURE")
     CK_CMD_BUILD = get_symbol_value("CK_CMD_BUILD")
     CK_CMD_CLEAN = get_symbol_value("CK_CMD_CLEAN")
+    CK_VERSION_ENABLE = get_symbol_value("CK_VERSION_ENABLE", "n")
 
 
 def _resolve_kconfig_root(path_text):
@@ -67,6 +75,13 @@ def _split_command(cmd_text):
     if not cmd_text:
         raise ValueError("Empty command from Kconfig")
     return shlex.split(cmd_text)
+
+
+def _kconfig_enabled(value):
+    if value is None:
+        return False
+    normalized = str(value).strip().lower()
+    return normalized not in {"", "n", "false", "0", "off"}
 
 
 def run_subprocess(cmd_list, cwd=None, capture_output=True):
@@ -114,6 +129,7 @@ class CKTool:
         self.logger("Executing config operation...")
         try:
             _run_menuconfig()
+            _load_kconfig_globals()
         except Exception as e:
             self.logger(f"Error executing config: {e}")
             sys.exit(1)
@@ -148,11 +164,14 @@ class CKTool:
             self.make()
 
     def make(self):
-        try:
-            _run_python_script("ck_version.py", logger=self.logger)
-        except subprocess.CalledProcessError as e:
-            self.logger(f"Error executing ck_version.py: {e}")
-            sys.exit(1)
+        if _kconfig_enabled(CK_VERSION_ENABLE):
+            try:
+                _run_python_script("ck_version.py", logger=self.logger)
+            except subprocess.CalledProcessError as e:
+                self.logger(f"Error executing ck_version.py: {e}")
+                sys.exit(1)
+        else:
+            self.logger("Skipping ck_version.py because CK_VERSION_ENABLE is disabled.")
 
         self.logger("Executing make operation...")
         try:

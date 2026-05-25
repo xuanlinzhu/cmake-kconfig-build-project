@@ -4,7 +4,7 @@
 # Version: 2.0.0
 
 #####################################################
-#                   标准配置，不要修改
+#                   CK-TOOLS工具配置
 #####################################################
 mainmenu "CK TOOLS CONFIG"
 
@@ -19,9 +19,7 @@ CK_CMD_CONFIGURE = cmake -S . -B build -G Ninja
 CK_CMD_BUILD = cmake --build build -j4
 # python ck_tools的清理命令
 CK_CMD_CLEAN = cmake --build build --target clean
-
 # CK_TOOL_CONFIG_END
-
 
 #导出变量给Cmake、python使用
 config CK_TOOLS_ROOT
@@ -51,22 +49,26 @@ source "$(CK_TOOLS_ROOT)/ck_tools/Kconfig.toolchain"
 #                   用户配置，按需修改
 #####################################################
 menu "project config"
-    # 决定生成文件的名字
-	config PRO_NAME
-        string "project name"
-        default "ck_project" 
+# 决定生成文件的名字
+config PRO_NAME
+    string "project name"
+    default "ck_project" 
 
-    # 正式工程删除此选项
-    config CK_EXAMPLE_DIS
-        bool "display Kconfig example"
-        default n
+config CK_VERSION_ENABLE
+    bool "enable ck-version function"
+    default n
+
+# 正式工程删除此选项
+config CK_EXAMPLE_DIS
+    bool "display Kconfig example"
+    default n
 endmenu
 
-#判断是否使用实例
+# 判断是否使用实例
 if(CK_EXAMPLE_DIS)
     source "Kconfig.example"
 endif
 
-#引入的外部模块配置
+# 引入的外部模块配置
 source "$(CK_WORKSPACE_ROOT)/package/Kconfig"
 source "$(CK_WORKSPACE_ROOT)/driver/Kconfig"
