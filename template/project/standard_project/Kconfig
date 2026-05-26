@@ -43,7 +43,7 @@ config CK_CMD_CLEAN
     default "$(CK_CMD_CLEAN)"
 
 # 引入工具链管理,STM32项目默认使用cubeMX生成的工具链配置
-# source "$(CK_TOOLS_ROOT)/ck_tools/Kconfig.toolchain"
+source "$(CK_TOOLS_ROOT)/ck_tools/Kconfig.toolchain"
 
 #####################################################
 #                   用户配置，按需修改
@@ -57,6 +57,11 @@ config PRO_NAME
 # 自动版本信息
 config CK_VERSION_ENABLE
     bool "enable ck-version function"
+    default n
+
+# 是否启用单元测试功能
+config CK_TEST_UNIT
+    bool "enable test unit function"
     default n
 endmenu
 

@@ -58,6 +58,11 @@ config PRO_NAME
 config CK_VERSION_ENABLE
     bool "enable ck-version function"
     default n
+    
+# 是否启用单元测试功能
+config CK_TEST_UNIT
+    bool "enable test unit function"
+    default n
 endmenu
 
 # 引入的外部模块配置
