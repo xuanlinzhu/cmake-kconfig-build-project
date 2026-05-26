@@ -1,8 +1,10 @@
 menu "package config"
 
-source "$(CK_WORKSPACE_ROOT)/package/drv_temp/Kconfig"
-source "$(CK_WORKSPACE_ROOT)/package/pack_temp/Kconfig"
-source "$(CK_WORKSPACE_ROOT)/package/unity/Kconfig"
-source "$(CK_WORKSPACE_ROOT)/package/sum_mod/Kconfig"
+# 自动递归子一级的Kconfig文件
+source "$(CK_WORKSPACE_ROOT)/package/*/Kconfig"
+# 也可以这样指定
+# source "$(CK_WORKSPACE_ROOT)/package/pack_temp/Kconfig"
+# source "$(CK_WORKSPACE_ROOT)/package/unity/Kconfig"
+# source "$(CK_WORKSPACE_ROOT)/package/sum_mod/Kconfig"
 
 endmenu

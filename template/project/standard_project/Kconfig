@@ -3,16 +3,17 @@
 # Date: 2026-5-26
 # Version: 3.0.0
 
-#####################################################
-#                   CK-TOOLS工具配置
-#####################################################
 mainmenu "CK TOOLS CONFIG"
-
+# ==================================================
+# CK-TOOLS工具配置
+# ==================================================
 # CK_TOOL_CONFIG_START
 # 配置ck_tools的路径
 CK_TOOLS_ROOT = ../../..
 # 配置工作区路径
 CK_WORKSPACE_ROOT = ../..
+# 项目类型目前支持[STANDARD STM32CUBEMX]
+CK_PROJECT_TYPE = STANDARD
 # python ck_tools的构建命令
 CK_CMD_CONFIGURE = cmake -S . -B build -G Ninja
 # python ck_tools的编译命令
@@ -30,6 +31,10 @@ config CK_WORKSPACE_ROOT
     string 
     default "$(CK_WORKSPACE_ROOT)"
 
+config CK_PROJECT_TYPE
+    string 
+    default "$(CK_PROJECT_TYPE)"
+
 config CK_CMD_CONFIGURE
     string
     default "$(CK_CMD_CONFIGURE)"
@@ -43,11 +48,13 @@ config CK_CMD_CLEAN
     default "$(CK_CMD_CLEAN)"
 
 # 引入工具链管理,STM32项目默认使用cubeMX生成的工具链配置
+if CK_PROJECT_TYPE = "STANDARD"
 source "$(CK_TOOLS_ROOT)/ck_tools/Kconfig.toolchain"
+endif
 
-#####################################################
-#                   用户配置，按需修改
-#####################################################
+# ==================================================
+# 用户配置
+# ==================================================
 menu "project config"
 # 决定生成文件的名字
 config PRO_NAME
@@ -65,5 +72,11 @@ config CK_TEST_UNIT
     default n
 endmenu
 
+# ==================================================
+# 用户配置 按需求增加,写在注释内 才能被自动扫描
+# ==================================================
 # 引入的外部模块配置
+# CK_TOOL_EXTERNAL_START
 source "$(CK_WORKSPACE_ROOT)/package/Kconfig"
+
+# CK_TOOL_EXTERNAL_END

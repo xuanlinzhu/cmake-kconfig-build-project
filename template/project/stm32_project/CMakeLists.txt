@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.20)
 include(ck_config.cmake)
 
 # 引入 CK CMake 工具库
-include(${CK_TOOLS_ROOT}/ck_tools/ck_cmlib.cmake)
+include(${CK_TOOLS_ROOT}/ck_tools/ck_utils.cmake)
 
 # STM32 工程通常由外部 toolchain 文件指定工具链
 # 示例：
