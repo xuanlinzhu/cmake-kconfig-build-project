@@ -6,9 +6,9 @@
 # Description: 这个文件用于创建cmake的快速模板工程
 
 # 设置需要匹配的源文件类型
-set(ALL_SOURCES_TYPES "*.c" "*.cpp" "*.S" "*.s")
+set(ALL_SOURCES_TYPES "*.c" "*.cpp" "*.cxx" "*.cc" "*.S" "*.s")
 # 设置需要匹配的头文件类型
-set(ALL_HEADER_TYPES "*.h")
+set(ALL_HEADER_TYPES "*.h" "*.hpp" "*.hxx" "*.hh")
 # 设置需要匹配的静态库类型
 set(ALL_LIBRARY_TYPES "*.a")
 # 全部源文件
@@ -321,53 +321,6 @@ function(set_external_path PATH BINARY_NAME)
     add_subdirectory(${EXTERNAL_SOURCE_DIR} ${BINARY_NAME})
 endfunction()
 
-#------------------Add external module paths by scanning Kconfig------------------#
-function(ck_add_kconfig_external_paths kconfig_file)
-    if(NOT EXISTS "${kconfig_file}")
-        message(WARNING "Kconfig file not found, no external paths added: ${kconfig_file}")
-        return()
-    endif()
-
-    file(STRINGS "${kconfig_file}" _kconfig_lines)
-    set(_inside_external_block FALSE)
-    set(_external_count 0)
-
-    foreach(_line IN LISTS _kconfig_lines)
-        if(_line MATCHES "^[ \t]*#[ \t]*CK_TOOL_EXTERNAL_START[ \t]*$")
-            set(_inside_external_block TRUE)
-        elseif(_line MATCHES "^[ \t]*#[ \t]*CK_TOOL_EXTERNAL_END[ \t]*$")
-            set(_inside_external_block FALSE)
-        elseif(_inside_external_block AND _line MATCHES "^[ \t]*source[ \t]+\"([^\"]+)/Kconfig\"[ \t]*$")
-            set(_external_source_dir "${CMAKE_MATCH_1}")
-            string(REGEX MATCHALL "\\$\\([A-Za-z_][A-Za-z0-9_]*\\)" _external_vars "${_external_source_dir}")
-
-            foreach(_external_var IN LISTS _external_vars)
-                string(REGEX REPLACE "^\\$\\(([A-Za-z_][A-Za-z0-9_]*)\\)$" "\\1" _external_var_name "${_external_var}")
-                if(NOT DEFINED ${_external_var_name})
-                    message(FATAL_ERROR "Undefined Kconfig path variable in external source: ${_external_var_name}")
-                endif()
-                string(REPLACE "${_external_var}" "${${_external_var_name}}" _external_source_dir "${_external_source_dir}")
-            endforeach()
-
-            get_filename_component(_external_binary_name "${_external_source_dir}" NAME)
-            if("${_external_binary_name}" STREQUAL "")
-                message(FATAL_ERROR "Unable to derive external build directory from: ${_line}")
-            endif()
-
-            set_external_path("${_external_source_dir}" "${_external_binary_name}")
-            math(EXPR _external_count "${_external_count} + 1")
-        endif()
-    endforeach()
-
-    if(_inside_external_block)
-        message(FATAL_ERROR "Missing CK_TOOL_EXTERNAL_END in ${kconfig_file}")
-    endif()
-
-    if(_external_count EQUAL 0)
-        message(STATUS "No external module source entries found in ${kconfig_file}")
-    endif()
-endfunction()
-
 #------------------查找当前目录下一级的所有构建文件------------------#
 function(find_cmakelists_current_dir )
     # 将传递给函数的所有参数存储在 EXCLUDE_FOLDERS 变量中
@@ -478,5 +431,52 @@ function(print_all_code_librarys)
     if(ALL_LIBRARYS)
         # 将 SRC_LIST 的值设置给 ALL_SOURCES
         set(${ALL_LIBRARYS} ${LIB_LIST} PARENT_SCOPE)
+    endif()
+endfunction()
+
+#------------------Add external module paths by scanning Kconfig------------------#
+function(ck_add_kconfig_external_paths kconfig_file)
+    if(NOT EXISTS "${kconfig_file}")
+        message(WARNING "Kconfig file not found, no external paths added: ${kconfig_file}")
+        return()
+    endif()
+
+    file(STRINGS "${kconfig_file}" _kconfig_lines)
+    set(_inside_external_block FALSE)
+    set(_external_count 0)
+
+    foreach(_line IN LISTS _kconfig_lines)
+        if(_line MATCHES "^[ \t]*#[ \t]*CK_TOOL_EXTERNAL_START[ \t]*$")
+            set(_inside_external_block TRUE)
+        elseif(_line MATCHES "^[ \t]*#[ \t]*CK_TOOL_EXTERNAL_END[ \t]*$")
+            set(_inside_external_block FALSE)
+        elseif(_inside_external_block AND _line MATCHES "^[ \t]*source[ \t]+\"([^\"]+)/Kconfig\"[ \t]*$")
+            set(_external_source_dir "${CMAKE_MATCH_1}")
+            string(REGEX MATCHALL "\\$\\([A-Za-z_][A-Za-z0-9_]*\\)" _external_vars "${_external_source_dir}")
+
+            foreach(_external_var IN LISTS _external_vars)
+                string(REGEX REPLACE "^\\$\\(([A-Za-z_][A-Za-z0-9_]*)\\)$" "\\1" _external_var_name "${_external_var}")
+                if(NOT DEFINED ${_external_var_name})
+                    message(FATAL_ERROR "Undefined Kconfig path variable in external source: ${_external_var_name}")
+                endif()
+                string(REPLACE "${_external_var}" "${${_external_var_name}}" _external_source_dir "${_external_source_dir}")
+            endforeach()
+
+            get_filename_component(_external_binary_name "${_external_source_dir}" NAME)
+            if("${_external_binary_name}" STREQUAL "")
+                message(FATAL_ERROR "Unable to derive external build directory from: ${_line}")
+            endif()
+
+            set_external_path("${_external_source_dir}" "${_external_binary_name}")
+            math(EXPR _external_count "${_external_count} + 1")
+        endif()
+    endforeach()
+
+    if(_inside_external_block)
+        message(FATAL_ERROR "Missing CK_TOOL_EXTERNAL_END in ${kconfig_file}")
+    endif()
+
+    if(_external_count EQUAL 0)
+        message(STATUS "No external module source entries found in ${kconfig_file}")
     endif()
 endfunction()

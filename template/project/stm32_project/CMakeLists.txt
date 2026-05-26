@@ -307,23 +307,23 @@ if(TC_PRINT_SIZE AND CMAKE_SIZE)
     set(SIZE_SCRIPT "${CMAKE_BINARY_DIR}/size_to_file.cmake")
 
     file(WRITE ${SIZE_SCRIPT}
-"execute_process(
-    COMMAND \"${CMAKE_SIZE}\" --format=berkeley \"${OUTPUT_DIR}/${PRO_NAME}.elf\"
-    RESULT_VARIABLE _size_print_result
-)
-if(NOT _size_print_result EQUAL 0)
-    message(FATAL_ERROR \"size print failed: \${_size_print_result}\")
-endif()
+        "execute_process(
+            COMMAND \"${CMAKE_SIZE}\" --format=berkeley \"${PRO_NAME}.elf\"
+            WORKING_DIRECTORY \"${OUTPUT_DIR}\"
+            RESULT_VARIABLE _size_print_result)
+        if(NOT _size_print_result EQUAL 0)
+            message(FATAL_ERROR \"size print failed: \${_size_print_result}\")
+        endif()
 
-execute_process(
-    COMMAND \"${CMAKE_SIZE}\" -A \"${OUTPUT_DIR}/${PRO_NAME}.elf\"
-    OUTPUT_FILE \"${SIZE_FILE}\"
-    RESULT_VARIABLE _size_save_result
-)
-if(NOT _size_save_result EQUAL 0)
-    message(FATAL_ERROR \"size save failed: \${_size_save_result}\")
-endif()
-")
+        execute_process(
+            COMMAND \"${CMAKE_SIZE}\" -A \"${OUTPUT_DIR}/${PRO_NAME}.elf\"
+            OUTPUT_FILE \"${SIZE_FILE}\"
+            RESULT_VARIABLE _size_save_result
+        )
+        if(NOT _size_save_result EQUAL 0)
+            message(FATAL_ERROR \"size save failed: \${_size_save_result}\")
+        endif()
+    ")
 
     add_custom_command(
         OUTPUT ${SIZE_FILE}
