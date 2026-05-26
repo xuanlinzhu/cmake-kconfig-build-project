@@ -1,7 +1,7 @@
 # ck_tool.py
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
-# Version: 2.0.0
+# Version: 3.0.0
 # Description: CLI tool for building with CMake and Kconfig
 
 import os

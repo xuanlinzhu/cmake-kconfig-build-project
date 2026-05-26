@@ -1,18 +1,10 @@
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
-# Date: 2025-6-28
-# Version: 2.0.0
+# Date: 2026-5-26
+# Version: 3.0.0
 
 #####################################################
-#                   标准配置，不要修改
-#####################################################
-# Author: zhuxuanlin
-# Email: xuanlinzhu@qq.com
-# Date: 2025-6-28
-# Version: 2.0.0
-
-#####################################################
-#                   标准配置，不要修改
+#                   CK-TOOLS工具配置
 #####################################################
 mainmenu "CK TOOLS CONFIG"
 
@@ -50,24 +42,23 @@ config CK_CMD_CLEAN
     string
     default "$(CK_CMD_CLEAN)"
 
-# 引入工具链管理
-source "$(CK_TOOLS_ROOT)/ck_tools/Kconfig.toolchain"
+# 引入工具链管理,STM32项目默认使用cubeMX生成的工具链配置
+# source "$(CK_TOOLS_ROOT)/ck_tools/Kconfig.toolchain"
 
 #####################################################
 #                   用户配置，按需修改
 #####################################################
 menu "project config"
-    # 决定生成文件的名字
-    config PRO_NAME
-        string "project name"
-        default "ck_project"
+# 决定生成文件的名字
+config PRO_NAME
+    string "project name"
+    default "ck_project" 
 
-    # 版本开关
-    config CK_VERSION_ENABLE
-        bool "enable ck-version function"
-        default n
+# 自动版本信息
+config CK_VERSION_ENABLE
+    bool "enable ck-version function"
+    default n
 endmenu
 
-#引入的外部模块配置
+# 引入的外部模块配置
 source "$(CK_WORKSPACE_ROOT)/package/Kconfig"
-

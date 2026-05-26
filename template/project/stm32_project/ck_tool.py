@@ -1,25 +1,20 @@
 # ck_tool.py
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
-# Version: 2.0.0
-# Description: Unified GUI and CLI tool for building with CMake and Kconfig, supporting Windows/Linux
+# Version: 3.0.0
+# Description: CLI tool for building with CMake and Kconfig
 
 import os
 import shlex
 import shutil
 import subprocess
 import sys
-import threading
-import tkinter as tk
 from pathlib import Path
-from tkinter import scrolledtext
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 KCONFIG_PATH = SCRIPT_DIR / "Kconfig"
 CONFIG_PATH = SCRIPT_DIR / ".config"
-# 兼容未加载 Kconfig 前的基础工具根目录
-BOOTSTRAP_TOOLS_ROOT = (SCRIPT_DIR / "../../..").resolve()
 
 # Kconfig globals
 CK_TOOLS_ROOT = ""
@@ -29,13 +24,8 @@ CK_CMD_BUILD = ""
 CK_CMD_CLEAN = ""
 CK_VERSION_ENABLE = ""
 
+# Python path
 PY_PATH = sys.executable
-
-
-def _tool_root():
-    if CK_TOOLS_ROOT:
-        return _resolve_kconfig_root(CK_TOOLS_ROOT)
-    return BOOTSTRAP_TOOLS_ROOT
 
 
 def _load_kconfig_globals():
@@ -47,23 +37,18 @@ def _load_kconfig_globals():
     try:
         import kconfiglib
     except ImportError as exc:
-        raise RuntimeError("kconfiglib is required to load template/project/stm32_test/Kconfig") from exc
+        raise RuntimeError("kconfiglib is required to load template/project/test/Kconfig") from exc
 
     kconf = kconfiglib.Kconfig(str(KCONFIG_PATH))
     if CONFIG_PATH.exists():
         kconf.load_config(str(CONFIG_PATH))
 
     def get_symbol_value(name, default=None):
-        config_value = _read_config_value(name)
-        if config_value is not None:
-            return config_value
         sym = kconf.syms.get(name)
         if sym is None:
             if default is not None:
                 return default
             raise KeyError(f"Kconfig symbol not found: {name}")
-        if sym.user_value is not None:
-            return sym.user_value
         value = sym.str_value
         if value is None:
             if default is not None:
@@ -84,20 +69,6 @@ def _resolve_kconfig_root(path_text):
     if path.is_absolute():
         return path
     return (SCRIPT_DIR / path).resolve()
-
-
-def _read_config_value(name):
-    if not CONFIG_PATH.exists():
-        return None
-    prefix = f"CONFIG_{name}="
-    for line in CONFIG_PATH.read_text(encoding="utf-8", errors="ignore").splitlines():
-        if not line.startswith(prefix):
-            continue
-        value = line[len(prefix):].strip()
-        if len(value) >= 2 and value[0] == value[-1] == '"':
-            return value[1:-1]
-        return value
-    return None
 
 
 def _split_command(cmd_text):
@@ -127,7 +98,7 @@ def run_subprocess(cmd_list, cwd=None, capture_output=True):
         yield f"Error: {e}"
         raise
 
-    if capture_output and process.stdout is not None:
+    if capture_output:
         for line in process.stdout:
             yield line.rstrip("\n")
 
@@ -137,55 +108,17 @@ def run_subprocess(cmd_list, cwd=None, capture_output=True):
 
 
 def _run_python_script(script_name, logger=print):
-    script_path = _tool_root() / "ck_tools" / script_name
+    script_path = _resolve_kconfig_root(CK_TOOLS_ROOT) / "ck_tools" / script_name
     logger(f"Executing {script_name} ...")
     subprocess.run([PY_PATH, str(script_path)], check=True, cwd=str(SCRIPT_DIR))
 
 
-def _run_menuconfig(gui=False):
-    menuconfig_root = _tool_root()
-    if gui:
-        menuconfig_fullpath = menuconfig_root / "tools" / "script" / "menuconfig.py"
-    else:
-        menuconfig_fullpath = menuconfig_root / "ck_tools" / "menuconfig.py"
+def _run_menuconfig():
+    import kconfiglib
+    import menuconfig
 
-    fallback_cmds = [
-        [PY_PATH, str(menuconfig_fullpath), "Kconfig"],
-        ["menuconfig"],
-        ["menuconfig.py"],
-    ]
-
-    if gui:
-        if os.name == "nt":
-            for cmd in fallback_cmds:
-                try:
-                    powershell_command = " ".join(cmd)
-                    powershell_full_command = f"& {{ {powershell_command}; exit }}"
-                    subprocess.run(
-                        ["cmd", "/c", "start", "/wait", "powershell", "-NoExit", "-Command", powershell_full_command],
-                        check=True,
-                    )
-                    return
-                except Exception:
-                    continue
-            raise RuntimeError("All Windows menuconfig attempts failed.")
-
-        term_prog = os.getenv("TERMINAL") or "x-terminal-emulator"
-        for cmd in fallback_cmds:
-            try:
-                subprocess.run([term_prog, "-e", *cmd], check=True)
-                return
-            except Exception:
-                continue
-        raise RuntimeError("All Linux menuconfig attempts failed.")
-
-    for cmd in fallback_cmds:
-        try:
-            subprocess.run(cmd, check=True)
-            return
-        except Exception:
-            continue
-    raise RuntimeError("All attempts to run menuconfig failed.")
+    kconf = kconfiglib.Kconfig(str(KCONFIG_PATH))
+    menuconfig.menuconfig(kconf)
 
 
 class CKTool:
@@ -195,7 +128,7 @@ class CKTool:
     def config(self, param=None):
         self.logger("Executing config operation...")
         try:
-            _run_menuconfig(gui=False)
+            _run_menuconfig()
             _load_kconfig_globals()
         except Exception as e:
             self.logger(f"Error executing config: {e}")
@@ -210,38 +143,9 @@ class CKTool:
         if param in ["auto", "a"]:
             self.build(param)
 
-    def guiconfig(self, param=None):
-        self.logger("Executing config operation...")
-        try:
-            _run_menuconfig(gui=True)
-            _load_kconfig_globals()
-        except Exception as e:
-            self.logger(f"Error executing menuconfig: {e}")
-            sys.exit(1)
-
-        try:
-            _run_python_script("ck_config_gen.py", logger=self.logger)
-        except subprocess.CalledProcessError as e:
-            self.logger(f"Error executing ck_config_gen.py: {e}")
-            sys.exit(1)
-
-        if param in ["auto", "a"]:
-            self.build(param)
-
-    def build(self, param=None, build_type="Debug"):
+    def build(self, param=None):
         self.logger("Executing build operation...")
         try:
-            if shutil.which("cmake") is None:
-                raise RuntimeError("cmake not found in PATH")
-            if shutil.which("ninja") is None:
-                raise RuntimeError("ninja not found in PATH")
-            # 交叉编译器检查：只做提示，不强制阻断，避免和 toolchain 文件冲突
-            gcc = shutil.which("arm-none-eabi-gcc")
-            if gcc:
-                self.logger(f"Found ARM GCC: {gcc}")
-            else:
-                self.logger("Warning: arm-none-eabi-gcc not found in PATH. If toolchain is configured by absolute path, this can be ignored.")
-
             build_dir = SCRIPT_DIR / "build"
             if build_dir.exists():
                 self.logger("Deleting existing build directory...")
@@ -260,7 +164,6 @@ class CKTool:
             self.make()
 
     def make(self):
-        # refresh ck_version.h
         if _kconfig_enabled(CK_VERSION_ENABLE):
             try:
                 _run_python_script("ck_version.py", logger=self.logger)
@@ -308,57 +211,6 @@ class CKTool:
             self.logger(f"Copy failed: {e}")
 
 
-class CKGui:
-    def __init__(self, root):
-        self.tool = CKTool(logger=self.print_info)
-        self.root = root
-        self.root.title("CK-TOOL")
-        self.root.geometry(f"720x480+{(self.root.winfo_screenwidth() - 720)//2}+{(self.root.winfo_screenheight()-480)//2}")
-        self.output_text = scrolledtext.ScrolledText(root, wrap=tk.WORD, height=20, width=80, font=("Microsoft Yahei", 10, "bold"))
-        self.output_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
-        self.output_text.config(state=tk.DISABLED, bg="#d7f3e3")
-        self.button_frame = tk.Frame(root)
-        self.button_frame.pack(pady=15)
-        self.add_buttons()
-        self.cd_to_script_dir()
-
-    def add_buttons(self):
-        btns = {
-            "配 置": lambda: self.run(self.tool.guiconfig),
-            "构 建": lambda: self.run(self.tool.build),
-            "编 译": lambda: self.run(self.tool.make),
-            "清 除": lambda: self.run(self.tool.clean),
-            # 目前自动会出现问题，导致配置还没结束就直接进行编译
-            # "自 动": lambda: self.run(lambda: self.tool.guiconfig("auto")),
-        }
-        for name, func in btns.items():
-            tk.Button(
-                self.button_frame,
-                text=name,
-                command=func,
-                padx=20,
-                pady=6,
-                bg="#d7f3e3",
-                font=("Microsoft YaHei", 10, "bold"),
-            ).pack(side=tk.LEFT, padx=10)
-
-    def run(self, func):
-        threading.Thread(target=func, daemon=True).start()
-
-    def print_info(self, text, error=False):
-        self.output_text.config(state=tk.NORMAL)
-        self.output_text.insert(tk.END, text + "\n", "error" if error else None)
-        self.output_text.see(tk.END)
-        self.output_text.config(state=tk.DISABLED)
-        if error:
-            self.output_text.tag_config("error", foreground="red")
-
-    def cd_to_script_dir(self):
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        os.chdir(script_dir)
-        self.print_info(f"Changed working directory to {script_dir}")
-
-
 def cli_main():
     tool = CKTool()
     if len(sys.argv) < 2:
@@ -377,7 +229,7 @@ def cli_main():
     elif cmd in ["auto", "a"]:
         tool.config("auto")
     elif cmd in ["help", "h"]:
-        print("Usage: python ck_tool.py [build make clean config auto help]")
+        print("Usage: python ck_tool.py [auto config build make clean help]")
     else:
         print(f"Invalid command: {cmd}")
         sys.exit(1)
