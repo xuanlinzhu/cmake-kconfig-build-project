@@ -88,8 +88,6 @@ class ProjectHooks(CKHooks):
         pass
 
     def after_make(self, ctx):
-        # 示例：编译完成后复制 bin 文件。默认关闭，需要时取消注释并修改文件名和目标路径。
-        # self.copy_bin(ctx, bin_name="lr_project.bin")
         pass
 
     def before_clean(self, ctx):
@@ -97,23 +95,6 @@ class ProjectHooks(CKHooks):
 
     def after_clean(self, ctx):
         pass
-
-    def copy_bin(self, ctx, bin_name):
-        """复制 bin 文件到指定目录，可按项目需求修改。"""
-        src = ctx.project_dir / "bin" / bin_name
-        if not src.exists():
-            ctx.logger(f"{src} not found, skip copy.")
-            return
-
-        if os.name == "nt":
-            dst = Path("C:/tftpboot") / src.name
-        else:
-            dst = Path("/home/xxx/tftpboot") / src.name
-
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dst)
-        ctx.logger(f"Copied {src} to {dst}")
-
 
 # =========================================================
 # 命令行入口
