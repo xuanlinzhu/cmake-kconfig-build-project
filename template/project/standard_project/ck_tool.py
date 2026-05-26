@@ -1,242 +1,123 @@
 # ck_tool.py
 # Author: zhuxuanlin
 # Email: xuanlinzhu@qq.com
-# Version: 3.0.0
-# Description: CLI tool for building with CMake and Kconfig
+# Date: 2026-05-26
+# Version: 4.1.0
+# Description: CK 工程构建入口，工程侧只保留用户自定义钩子
 
 import os
-import shlex
 import shutil
-import subprocess
 import sys
 from pathlib import Path
 
+
+# =========================================================
+# 工程路径
+# =========================================================
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 KCONFIG_PATH = SCRIPT_DIR / "Kconfig"
 CONFIG_PATH = SCRIPT_DIR / ".config"
 
-# Kconfig globals
-CK_TOOLS_ROOT = ""
-CK_WORKSPACE_ROOT = ""
-CK_CMD_CONFIGURE = ""
-CK_CMD_BUILD = ""
-CK_CMD_CLEAN = ""
-CK_VERSION_ENABLE = ""
 
-# Python path
-PY_PATH = sys.executable
+# =========================================================
+# Kconfig 启动加载
+# =========================================================
 
-
-def _load_kconfig_globals():
-    global CK_TOOLS_ROOT, CK_WORKSPACE_ROOT, CK_CMD_CONFIGURE, CK_CMD_BUILD, CK_CMD_CLEAN, CK_VERSION_ENABLE
-
-    os.environ.setdefault("srctree", str(SCRIPT_DIR))
-    os.environ.setdefault("KCONFIG_CONFIG", str(CONFIG_PATH))
-
-    try:
-        import kconfiglib
-    except ImportError as exc:
-        raise RuntimeError("kconfiglib is required to load template/project/test/Kconfig") from exc
-
-    kconf = kconfiglib.Kconfig(str(KCONFIG_PATH))
-    if CONFIG_PATH.exists():
-        kconf.load_config(str(CONFIG_PATH))
-
-    def get_symbol_value(name, default=None):
-        sym = kconf.syms.get(name)
-        if sym is None:
-            if default is not None:
-                return default
-            raise KeyError(f"Kconfig symbol not found: {name}")
-        value = sym.str_value
-        if value is None:
-            if default is not None:
-                return default
-            raise ValueError(f"Kconfig symbol has no value: {name}")
-        return value
-
-    CK_TOOLS_ROOT = get_symbol_value("CK_TOOLS_ROOT")
-    CK_WORKSPACE_ROOT = get_symbol_value("CK_WORKSPACE_ROOT")
-    CK_CMD_CONFIGURE = get_symbol_value("CK_CMD_CONFIGURE")
-    CK_CMD_BUILD = get_symbol_value("CK_CMD_BUILD")
-    CK_CMD_CLEAN = get_symbol_value("CK_CMD_CLEAN")
-    CK_VERSION_ENABLE = get_symbol_value("CK_VERSION_ENABLE", "n")
-
-
-def _resolve_kconfig_root(path_text):
+def _resolve_kconfig_path(path_text):
+    """将 Kconfig 中读取到的路径解析为绝对路径。"""
     path = Path(path_text)
     if path.is_absolute():
         return path
     return (SCRIPT_DIR / path).resolve()
 
 
-def _split_command(cmd_text):
-    if not cmd_text:
-        raise ValueError("Empty command from Kconfig")
-    return shlex.split(cmd_text)
+def _load_ck_tools_root_from_kconfig():
+    """从工程 Kconfig 中读取 CK_TOOLS_ROOT，用于导入 ck_tools。"""
+    os.environ["srctree"] = str(SCRIPT_DIR)
+    os.environ["KCONFIG_CONFIG"] = str(CONFIG_PATH)
 
-
-def _kconfig_enabled(value):
-    if value is None:
-        return False
-    normalized = str(value).strip().lower()
-    return normalized not in {"", "n", "false", "0", "off"}
-
-
-def run_subprocess(cmd_list, cwd=None, capture_output=True):
     try:
-        process = subprocess.Popen(
-            cmd_list,
-            cwd=cwd,
-            shell=False,
-            stdout=subprocess.PIPE if capture_output else None,
-            stderr=subprocess.STDOUT,
-            encoding="utf-8",
-        )
-    except Exception as e:
-        yield f"Error: {e}"
-        raise
-
-    if capture_output:
-        for line in process.stdout:
-            yield line.rstrip("\n")
-
-    returncode = process.wait()
-    if returncode != 0:
-        raise subprocess.CalledProcessError(returncode, cmd_list)
-
-
-def _run_python_script(script_name, logger=print):
-    script_path = _resolve_kconfig_root(CK_TOOLS_ROOT) / "ck_tools" / script_name
-    logger(f"Executing {script_name} ...")
-    subprocess.run([PY_PATH, str(script_path)], check=True, cwd=str(SCRIPT_DIR))
-
-
-def _run_menuconfig():
-    import kconfiglib
-    import menuconfig
+        import kconfiglib
+    except ImportError as exc:
+        raise RuntimeError("kconfiglib is required to load CK_TOOLS_ROOT from Kconfig") from exc
 
     kconf = kconfiglib.Kconfig(str(KCONFIG_PATH))
-    menuconfig.menuconfig(kconf)
+    if CONFIG_PATH.exists():
+        kconf.load_config(str(CONFIG_PATH))
+
+    sym = kconf.syms.get("CK_TOOLS_ROOT")
+    if sym is None or not sym.str_value:
+        raise RuntimeError("Kconfig symbol not found: CK_TOOLS_ROOT")
+
+    return _resolve_kconfig_path(sym.str_value)
 
 
-class CKTool:
-    def __init__(self, logger=print):
-        self.logger = logger
+CK_TOOLS_ROOT = _load_ck_tools_root_from_kconfig()
+sys.path.insert(0, str(CK_TOOLS_ROOT))
 
-    def config(self, param=None):
-        self.logger("Executing config operation...")
-        try:
-            _run_menuconfig()
-            _load_kconfig_globals()
-        except Exception as e:
-            self.logger(f"Error executing config: {e}")
-            sys.exit(1)
+from ck_tools.ck_core import CKHooks, cli_main
 
-        try:
-            _run_python_script("ck_config_gen.py", logger=self.logger)
-        except subprocess.CalledProcessError as e:
-            self.logger(f"Error executing ck_config_gen.py: {e}")
-            sys.exit(1)
 
-        if param in ["auto", "a"]:
-            self.build(param)
+# =========================================================
+# 用户自定义钩子
+# =========================================================
 
-    def build(self, param=None):
-        self.logger("Executing build operation...")
-        try:
-            build_dir = SCRIPT_DIR / "build"
-            if build_dir.exists():
-                self.logger("Deleting existing build directory...")
-                shutil.rmtree(build_dir)
+class ProjectHooks(CKHooks):
+    """工程自定义钩子，用户只需要在这里添加项目私有流程。"""
 
-            build_dir.mkdir(parents=True, exist_ok=True)
-            build_cmd = _split_command(CK_CMD_CONFIGURE)
-            self.logger(f"Running: {' '.join(build_cmd)}")
-            for line in run_subprocess(build_cmd, cwd=str(SCRIPT_DIR)):
-                self.logger(line)
-        except Exception as e:
-            self.logger(f"Error executing build: {e}")
-            sys.exit(1)
+    def before_config(self, ctx):
+        pass
 
-        if param in ["auto", "a"]:
-            self.make()
+    def after_config(self, ctx):
+        pass
 
-    def make(self):
-        if _kconfig_enabled(CK_VERSION_ENABLE):
-            try:
-                _run_python_script("ck_version.py", logger=self.logger)
-            except subprocess.CalledProcessError as e:
-                self.logger(f"Error executing ck_version.py: {e}")
-                sys.exit(1)
-        else:
-            self.logger("Skipping ck_version.py because CK_VERSION_ENABLE is disabled.")
+    def before_config_gen(self, ctx):
+        pass
 
-        self.logger("Executing make operation...")
-        try:
-            make_cmd = _split_command(CK_CMD_BUILD)
-            self.logger(f"Running: {' '.join(make_cmd)}")
-            for line in run_subprocess(make_cmd, cwd=str(SCRIPT_DIR)):
-                self.logger(line)
-        except Exception as e:
-            self.logger(f"Error executing make: {e}")
-            sys.exit(1)
+    def after_config_gen(self, ctx):
+        pass
 
-    def clean(self):
-        self.logger("Executing clean operation...")
-        try:
-            clean_cmd = _split_command(CK_CMD_CLEAN)
-            self.logger(f"Running: {' '.join(clean_cmd)}")
-            for line in run_subprocess(clean_cmd, cwd=str(SCRIPT_DIR)):
-                self.logger(line)
-        except Exception as e:
-            self.logger(f"Error executing clean: {e}")
-            sys.exit(1)
+    def before_build(self, ctx):
+        pass
 
-    def copy_bin(self):
-        src = SCRIPT_DIR / "bin" / "lr_project.bin"
+    def after_build(self, ctx):
+        pass
+
+    def before_make(self, ctx):
+        pass
+
+    def after_make(self, ctx):
+        # 示例：编译完成后复制 bin 文件。默认关闭，需要时取消注释并修改文件名和目标路径。
+        # self.copy_bin(ctx, bin_name="lr_project.bin")
+        pass
+
+    def before_clean(self, ctx):
+        pass
+
+    def after_clean(self, ctx):
+        pass
+
+    def copy_bin(self, ctx, bin_name):
+        """复制 bin 文件到指定目录，可按项目需求修改。"""
+        src = ctx.project_dir / "bin" / bin_name
         if not src.exists():
-            self.logger(f"{src} not found, skip copy.")
+            ctx.logger(f"{src} not found, skip copy.")
             return
-        try:
-            if os.name == "nt":
-                dst = Path("C:/tftpboot") / src.name
-            else:
-                dst = Path("/home/xxx/tftpboot") / src.name
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(src, dst)
-            self.logger(f"Copied {src} to {dst}")
-        except Exception as e:
-            self.logger(f"Copy failed: {e}")
+
+        if os.name == "nt":
+            dst = Path("C:/tftpboot") / src.name
+        else:
+            dst = Path("/home/xxx/tftpboot") / src.name
+
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+        ctx.logger(f"Copied {src} to {dst}")
 
 
-def cli_main():
-    tool = CKTool()
-    if len(sys.argv) < 2:
-        print("Usage: python ck_tool.py [build make clean config auto help]")
-        sys.exit(1)
-
-    cmd = sys.argv[1].lower()
-    if cmd in ["config", "c"]:
-        tool.config()
-    elif cmd in ["build", "b"]:
-        tool.build()
-    elif cmd in ["make", "m"]:
-        tool.make()
-    elif cmd in ["clean", "cl"]:
-        tool.clean()
-    elif cmd in ["auto", "a"]:
-        tool.config("auto")
-    elif cmd in ["help", "h"]:
-        print("Usage: python ck_tool.py [auto config build make clean help]")
-    else:
-        print(f"Invalid command: {cmd}")
-        sys.exit(1)
-
-
-_load_kconfig_globals()
-
+# =========================================================
+# 命令行入口
+# =========================================================
 
 if __name__ == "__main__":
-    cli_main()
+    cli_main(project_dir=SCRIPT_DIR, hooks=ProjectHooks())
