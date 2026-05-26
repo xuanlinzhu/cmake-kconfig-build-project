@@ -6,6 +6,18 @@
 CK Build 不是为了替代 CMake、Ninja、Make 或 STM32CubeMX，而是在这些工具之上提供一层统一的工程约定。
 它更适合“希望工程流程统一，但仍然保留项目差异可见性”的场景。
 
+## 配套 Skill
+
+本仓库配套了一个给 Codex 使用的 Skill：[`skill/ck-build-skill/SKILL.md`](skill/ck-build-skill/SKILL.md)。
+
+它主要用于：
+
+- CK Build 的配置、构建、编译和清理。
+- 修改 `Kconfig`、`.config`、`ck_config.cmake`、`ck_config.h`。
+- 新增 `package`、修改 `CMakeLists.txt`，以及排查常见构建错误。
+
+这个 Skill 的要求是优先遵守当前工程约定，不把本项目当成通用 CMake 教程。
+
 ## 一眼了解
 
 CK Build 主要解决下面几类问题：
