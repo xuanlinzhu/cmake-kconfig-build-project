@@ -101,4 +101,5 @@ class ProjectHooks(CKHooks):
 # =========================================================
 
 if __name__ == "__main__":
+    # 通用流程失败由核心返回非零状态；自定义 Hook 失败应抛出异常，不要只打印后继续。
     cli_main(project_dir=SCRIPT_DIR, hooks=ProjectHooks())

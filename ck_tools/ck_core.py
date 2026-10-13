@@ -75,8 +75,12 @@ def run_subprocess(cmd_list, cwd=None, capture_output=True):
         raise
 
     if capture_output and process.stdout:
-        for line in process.stdout:
-            yield line.rstrip("\n")
+        try:
+            for line in process.stdout:
+                yield line.rstrip("\n")
+        finally:
+            # 输出读取结束或异常时释放管道，避免失败流程遗留文件句柄。
+            process.stdout.close()
 
     returncode = process.wait()
     if returncode != 0:
@@ -332,11 +336,14 @@ class CKTool:
         self.hooks.before_make(self.ctx)
 
         if _kconfig_enabled(self.ctx.ck_version_enable):
-            update_ck_version_h(
+            version_updated = update_ck_version_h(
                 file_path=self.ctx.header_config_path,
                 work_dir=self.ctx.project_dir,
                 logger=self.logger,
             )
+            # 已启用的前置步骤失败时停止编译，避免自动流程继续使用旧版本信息。
+            if not version_updated:
+                raise RuntimeError("Failed to update CK version; build stopped")
         else:
             self.logger("Skipping ck_version.py because CK_VERSION_ENABLE is disabled.")
 

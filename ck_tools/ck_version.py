@@ -134,10 +134,13 @@ def main(argv=None):
     parser.add_argument("--work-dir", default=".", help="Git working directory")
     args = parser.parse_args(argv)
 
-    update_ck_version_h(
+    version_updated = update_ck_version_h(
         file_path=args.header,
         work_dir=args.work_dir,
     )
+    # 独立脚本同样返回失败状态，供任务和外部自动流程判断。
+    if not version_updated:
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
